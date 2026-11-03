@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://www.gstatic.com https://www.googleapis.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob: https://lh3.googleusercontent.com https://www.gstatic.com; connect-src https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://haru-pattern-eng.firebaseio.com https://haru-pattern-eng.firebaseapp.com; frame-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com; child-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://www.gstatic.com https://www.googleapis.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://lh3.googleusercontent.com https://www.gstatic.com; connect-src https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://haru-pattern-eng.firebaseio.com https://haru-pattern-eng.firebaseapp.com; frame-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com; child-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com">
 <style>html{color-scheme:light}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head><body>
 <title>하루 한 패턴 영어</title>
@@ -230,6 +230,9 @@ textarea.txt{min-height:84px;resize:vertical}
 .modal-box a{color:var(--accent)}
 .st-in{font-family:var(--f-body);font-size:15px;width:100%}
 .st-btn{cursor:pointer;color:var(--ink)}
+.sponsor-box{width:min(280px,100%);padding:16px;align-items:center;text-align:center;gap:12px}
+.sponsor-box h3{font-size:16px;font-weight:700}
+.sponsor-box img{width:220px;height:220px;background:#fff;border-radius:8px;padding:8px;display:block}
 footer.refs{display:flex;flex-direction:column;gap:8px}
 footer.refs ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
 footer.refs a{color:var(--accent);text-decoration:none;font-size:14px}
@@ -826,7 +829,16 @@ async function signInGoogle(){
   if (!fbAuth) throw new Error("no-auth");
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({prompt: "select_account"});
-  await fbAuth.signInWithPopup(provider);
+  try {
+    await fbAuth.signInWithPopup(provider);
+  } catch (e) {
+    const code = e && e.code || "";
+    if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
+      await fbAuth.signInWithRedirect(provider);
+      return;
+    }
+    throw e;
+  }
 }
 async function signOutGoogle(){
   if (fbUnsub) { try { fbUnsub(); } catch(e) {} fbUnsub = null; }
@@ -926,6 +938,7 @@ async function initRemote(){
         if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
         fbAuth = firebase.auth();
         fbDb = firebase.firestore();
+        fbAuth.getRedirectResult().catch(() => {});
         fbAuth.onAuthStateChanged(user => { attachFirebaseUser(user || null); });
       } catch(e) {}
     }
@@ -1140,8 +1153,31 @@ async function openSettings(reason, detail){
   setTimeout(() => (cur.hasKey ? model : key).focus(), 0);
 }
 function addSettingsButton(){
-  const st = $("#stats"); if (!st || st.querySelector(".st-btn")) return;
+  const st = $("#stats"); if (!st || st.querySelector(".st-btn:not(.sp-btn)")) return;
   const b = el("button","stat st-btn","설정·백업"); b.type = "button"; b.onclick = () => openSettings(); st.appendChild(b);
+}
+function addSponsorButton(){
+  const st = $("#stats"); if (!st || st.querySelector(".sp-btn")) return;
+  const b = el("button","stat st-btn sp-btn","후원하기"); b.type = "button"; b.onclick = openSponsor; st.appendChild(b);
+}
+function openSponsor(){
+  let m = document.getElementById("sponsor");
+  if (!m) {
+    m = el("div","modal"); m.id = "sponsor";
+    m.addEventListener("click", e => { if (e.target === m) m.hidden = true; });
+    document.body.appendChild(m);
+  }
+  m.hidden = false; m.innerHTML = "";
+  const box = el("div","modal-box sponsor-box");
+  box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-labelledby","sp-h");
+  const h = el("h3", null, "커피한잔 후원하기"); h.id = "sp-h";
+  const img = document.createElement("img");
+  img.src = "sponsor-qr.png"; img.alt = "커피한잔 후원 QR"; img.width = 220; img.height = 220;
+  const close = el("button","btn","닫기"); close.type = "button";
+  close.onclick = () => { m.hidden = true; };
+  box.append(h, img, close);
+  m.appendChild(box);
+  close.focus();
 }
 
 /* ---------------- 진도 백업 / 불러오기 ---------------- */
@@ -1298,10 +1334,12 @@ let tab = "learn";
 let quiz = null;
 let journalAt = null;
 
-function renderStats(){ setTimeout(() => window.desktop && addSettingsButton(), 0);
+function renderStats(){
   const done = Object.keys(state.done).length;
   const made = Object.values(state.made).reduce((a,b)=>a+b.length,0);
   $("#stats").innerHTML = `<span class="stat">완료 <b>${done}</b>/${P.length}</span><span class="stat">연속 <b>${streak()}</b>일</span><span class="stat">내 문장 <b>${made}</b>개</span>`;
+  addSponsorButton();
+  setTimeout(() => window.desktop && addSettingsButton(), 0);
 }
 let dayPage = null;   // 10일 단위 페이지
 function renderDays(){
