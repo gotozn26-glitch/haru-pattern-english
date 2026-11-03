@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://www.gstatic.com https://www.googleapis.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob: https://lh3.googleusercontent.com https://www.gstatic.com; connect-src https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://haru-pattern-eng.firebaseio.com https://haru-pattern-eng.firebaseapp.com; frame-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com; child-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com">
 <style>html{color-scheme:light}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head><body>
 <title>하루 한 패턴 영어</title>
@@ -307,6 +307,9 @@ footer.refs a:hover{text-decoration:underline}
 
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore-compat.js"></script>
 <script>
 // AI 공급자 3종(Claude · ChatGPT · Gemini) 호출 공통 모듈 — 브라우저와 Electron(Node) 양쪽에서 씀
 (function (root) {
@@ -678,21 +681,40 @@ function similarity(a, b){
 /* ---------------- STATE / STORAGE ---------------- */
 const LS_KEY = "pattern-english-v1";
 const CLOUD_FILE = "하루한패턴영어-동기화.json";
+const FB_CONFIG = {
+  apiKey: "AIzaSyCSJRShx7c5xItl_EsrQkkHj91be73qJzg",
+  authDomain: "haru-pattern-eng.firebaseapp.com",
+  projectId: "haru-pattern-eng",
+  storageBucket: "haru-pattern-eng.firebasestorage.app",
+  messagingSenderId: "16416887424",
+  appId: "1:16416887424:web:5c7ae607878709e4920c65"
+};
 let state = { done:{}, made:{}, days:[], notes:{}, wrongs:[] };   // done[i] = {best, total, at}; made[i] = [{en, fix, tip, ok, at}]; wrongs = 오답노트
 try { const s = JSON.parse(localStorage.getItem(LS_KEY) || "null"); if (s) state = Object.assign(state, s); } catch(e) {}
 if (!Array.isArray(state.wrongs)) state.wrongs = [];
 let dbRef = null, saving = Promise.resolve(), saveTimer = null;
 let cloudDir = null, cloudReady = false;
+let fbAuth = null, fbDb = null, fbUser = null, fbUnsub = null, lastPushedAt = null, applyingRemote = false;
+function fbHttps(){
+  return location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+}
+function syncLabel(){
+  if (fbUser) return (fbUser.email || "Google") + "에 저장됨";
+  if (cloudReady) return "Drive에 저장됨";
+  if (dbRef) return "계정에 저장됨";
+  return "이 기기에 저장됨";
+}
 function save(){
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
-  if (!dbRef && !cloudDir) return;
+  if (!dbRef && !cloudDir && !fbUser) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const body = JSON.parse(JSON.stringify(state));
     saving = saving.then(async () => {
       if (dbRef) await dbRef.set(body);
+      if (fbUser && fbDb) await writeFirebase();
       await writeCloud();
-    }).then(() => setSync(cloudReady ? "Drive에 저장됨" : "계정에 저장됨")).catch(() => setSync("이 기기에만 저장됨"));
+    }).then(() => setSync(syncLabel())).catch(() => setSync("이 기기에만 저장됨"));
   }, 600);
 }
 function setSync(t){ const n = $("#sync"); if (n) n.textContent = t; }
@@ -744,6 +766,73 @@ function mergeInk(incoming){
 function backupPayload(){
   let voice = null, hide = null; try { voice = localStorage.getItem("pattern-english-voice3"); hide = localStorage.getItem("pattern-english-hide-notes"); } catch(e) {}
   return {app:"pattern-english", v:2, savedAt:new Date().toISOString(), state, ink, prefs:{voice, hide}};
+}
+function fbDocRef(){
+  return fbDb && fbUser ? fbDb.collection("users").doc(fbUser.uid) : null;
+}
+async function writeFirebase(){
+  const ref = fbDocRef();
+  if (!ref) return;
+  const p = backupPayload();
+  lastPushedAt = p.savedAt;
+  await ref.set({
+    uid: fbUser.uid,
+    app: p.app,
+    v: p.v,
+    savedAt: p.savedAt,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    state: p.state,
+    ink: p.ink || {},
+    prefs: p.prefs || {}
+  });
+}
+function applyRemoteDoc(d){
+  if (!d || d.app !== "pattern-english" || !d.state) return false;
+  applyingRemote = true;
+  mergeIncoming(d.state);
+  mergeInk(d.ink);
+  if (d.prefs && d.prefs.voice) try { localStorage.setItem("pattern-english-voice3", d.prefs.voice); } catch(e) {}
+  if (d.prefs && d.prefs.hide != null) try { localStorage.setItem("pattern-english-hide-notes", d.prefs.hide); } catch(e) {}
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+  if (!navigated) { cur = startDay(); dayPage = null; tab = "learn"; }
+  applyingRemote = false;
+  render();
+  return true;
+}
+async function attachFirebaseUser(user){
+  fbUser = user;
+  if (fbUnsub) { try { fbUnsub(); } catch(e) {} fbUnsub = null; }
+  if (!user) { setSync("이 기기에 저장됨"); initCloud(); return; }
+  setSync("계정에서 불러오는 중…");
+  const ref = fbDocRef();
+  try {
+    const snap = await ref.get();
+    if (snap.exists) applyRemoteDoc(snap.data());
+    else await writeFirebase();
+    fbUnsub = ref.onSnapshot(s => {
+      if (!s.exists) return;
+      const d = s.data() || {};
+      if (d.savedAt && d.savedAt === lastPushedAt) return;
+      if (applyingRemote) return;
+      applyRemoteDoc(d);
+      setSync(syncLabel());
+    });
+    setSync(syncLabel());
+  } catch(e) {
+    setSync("계정 저장 실패 · 이 기기에만 저장됨");
+  }
+}
+async function signInGoogle(){
+  if (!fbAuth) throw new Error("no-auth");
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt: "select_account"});
+  await fbAuth.signInWithPopup(provider);
+}
+async function signOutGoogle(){
+  if (fbUnsub) { try { fbUnsub(); } catch(e) {} fbUnsub = null; }
+  if (fbAuth) await fbAuth.signOut();
+  fbUser = null;
+  setSync("이 기기에 저장됨");
 }
 function idbOpen(){
   return new Promise((res, rej) => {
@@ -832,10 +921,18 @@ async function initCloud(){
 }
 async function initRemote(){
   try {
-    if (!window.claude?.use) { if (!cloudReady) setSync("이 기기에 저장됨"); initCloud(); return; }
+    if (window.firebase && firebase.initializeApp && fbHttps()) {
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+        fbAuth = firebase.auth();
+        fbDb = firebase.firestore();
+        fbAuth.onAuthStateChanged(user => { attachFirebaseUser(user || null); });
+      } catch(e) {}
+    }
+    if (!window.claude?.use) { if (!fbUser && !cloudReady) setSync("이 기기에 저장됨"); initCloud(); return; }
     const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
     const id = user ? await user.id() : null;
-    if (!db || !id) { if (!cloudReady) setSync("이 기기에 저장됨"); initCloud(); return; }
+    if (!db || !id) { if (!fbUser && !cloudReady) setSync("이 기기에 저장됨"); initCloud(); return; }
     dbRef = db.doc("data/users/" + id + "/progress");
     inkDb = db; inkUid = id; if (typeof cur === "number") loadInk(cur);
     const snap = await dbRef.get();
@@ -847,9 +944,9 @@ async function initRemote(){
     } else if (Object.keys(state.done).length || Object.keys(state.made).length) {
       save();
     }
-    setSync("계정에 저장됨");
+    if (!fbUser) setSync("계정에 저장됨");
     initCloud();
-  } catch(e) { if (!cloudReady) setSync("이 기기에 저장됨"); initCloud(); }
+  } catch(e) { if (!fbUser && !cloudReady) setSync("이 기기에 저장됨"); initCloud(); }
 }
 
 /* ---------------- SPEECH ---------------- */
@@ -1063,8 +1160,35 @@ function parseBackup(raw){
 }
 function backupSection(){
   const wrap = el("div","bk");
-  wrap.appendChild(el("h3", null, "다른 컴퓨터와 맞추기"));
-  wrap.appendChild(el("p","note","이 페이지는 컴퓨터끼리 자동으로 연결되지 않아요. 대신 공부 기록을 파일 하나로 보내면, 저쪽 컴퓨터에서 그대로 이어할 수 있어요."));
+  wrap.appendChild(el("h3", null, "구글 계정으로 동기화"));
+  if (!fbHttps()) {
+    wrap.appendChild(el("p","note","구글 로그인은 인터넷 주소(https)에서만 돼요. 퍼블리시된 사이트에서 같은 구글 계정으로 로그인하면 컴퓨터끼리 공부가 이어져요."));
+  } else if (fbUser) {
+    wrap.appendChild(el("p","note","지금 " + (fbUser.email || "Google") + "으로 저장 중이에요. 다른 컴퓨터에서도 같은 계정으로 로그인하면 오늘 문장·오답노트·포스트잇이 맞춰져요."));
+    const out = el("button","btn","로그아웃"); out.type = "button";
+    out.onclick = async () => { try { await signOutGoogle(); openSettings(); } catch(e) {} };
+    wrap.appendChild(out);
+  } else {
+    wrap.appendChild(el("p","note","Google로 로그인하면 이 컴퓨터와 다른 컴퓨터의 공부 기록이 같은 계정에 저장돼요. 무료 Firebase 프로젝트에만 저장되고, GAMJA AILAB과는 섞이지 않아요."));
+    const login = el("button","btn primary","Google로 로그인"); login.type = "button";
+    const status = el("p","note");
+    login.onclick = async () => {
+      status.textContent = "로그인 창을 여는 중…";
+      try {
+        await signInGoogle();
+        status.textContent = "로그인했어요. 이제 다른 컴퓨터에서도 같은 계정으로 열면 돼요.";
+        setTimeout(() => openSettings(), 400);
+      } catch(e) {
+        const code = e && e.code;
+        if (code === "auth/popup-closed-by-user") status.textContent = "로그인을 취소했어요.";
+        else if (code === "auth/unauthorized-domain") status.textContent = "이 주소는 아직 허용되지 않았어요.";
+        else status.textContent = "로그인하지 못했어요. " + ((e && e.message) || "");
+      }
+    };
+    wrap.append(login, status);
+  }
+  wrap.appendChild(el("h3", null, "파일로 맞추기"));
+  wrap.appendChild(el("p","note","로그인 없이 옮기려면 공부 기록을 파일 하나로 보내면 돼요."));
   wrap.appendChild(el("p","note","1. 이 컴퓨터에서 ‘보내기’ → 2. 에어드롭·카톡·메일로 전달 → 3. 저쪽 컴퓨터에서 ‘불러오기’."));
   const msg = el("p","note");
   const c = el("div","controls");
@@ -1400,7 +1524,7 @@ const inkList = (create) => { if (typeof cur !== "number") return []; const d = 
 
 function saveInk(day){
   try { localStorage.setItem(INK_KEY, JSON.stringify(ink)); } catch(e) {}
-  if (cloudReady) save();
+  if (cloudReady || fbUser) save();
   if (!inkDb || !inkUid) return;
   clearTimeout(inkTimers[day]);
   inkTimers[day] = setTimeout(() => { inkDb.doc("data/users/" + inkUid + "/ink-" + day).set({strokes: ink[day] || {}}).catch(() => {}); }, 800);

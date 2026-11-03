@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: Firebase Auth uid
+    // Fields:
+    //   - uid: string (required, immutable, must equal auth.uid)
+    //   - app: string (required, must be "pattern-english")
+    //   - v: int (required, study backup schema version)
+    //   - savedAt: string (required, ISO-8601 timestamp, max 40 chars)
+    //   - updatedAt: timestamp (required, server or client timestamp)
+    //   - state: map (required) study progress
+    //       keys allowed: done, made, days, notes, wrongs, last
+    //       - done: map of day-index -> {best, total, at, ...}
+    //       - made: map of day-index -> list of sentence objects
+    //       - days: list of YYYY-MM-DD strings (max 400)
+    //       - notes: map of day-index -> list of sticky-note objects
+    //       - wrongs: list of wrong-answer objects (max 500)
+    //       - last: number (optional current day index)
+    //   - ink: map (required) handwritten notes keyed by day
+    //   - prefs: map (required) local preferences such as voice/hide
+    //
+    // Owner-only private study data. No public reads. No roles.
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != "";
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function uidUnchanged() {
+      return request.resource.data.uid == request.auth.uid
+        && (!('uid' in resource.data) || request.resource.data.uid == resource.data.uid);
+    }
+
+    function isIsoTime(value) {
+      return value is string
+        && value.size() >= 20
+        && value.size() <= 40
+        && value.matches('^\\d{4}-\\d{2}-\\d{2}T.*');
+    }
+
+    function isStringMap(value, maxKeys) {
+      return value is map && value.size() <= maxKeys;
+    }
+
+    function isValidPrefs(value) {
+      return value is map
+        && value.size() <= 20
+        && value.keys().hasOnly(['voice', 'hide'])
+        && (!('voice' in value) || value.voice == null || (value.voice is string && value.voice.size() <= 200))
+        && (!('hide' in value) || value.hide == null || (value.hide is string && value.hide.size() <= 20));
+    }
+
+    function isValidState(value) {
+      return value is map
+        && value.keys().hasOnly(['done', 'made', 'days', 'notes', 'wrongs', 'last'])
+        && (!('done' in value) || isStringMap(value.done, 400))
+        && (!('made' in value) || isStringMap(value.made, 400))
+        && (!('notes' in value) || isStringMap(value.notes, 400))
+        && (!('days' in value) || (value.days is list && value.days.size() <= 400))
+        && (!('wrongs' in value) || (value.wrongs is list && value.wrongs.size() <= 500))
+        && (!('last' in value) || value.last is int || value.last is float);
+    }
+
+    function isValidProgress() {
+      let data = request.resource.data;
+      return hasRequiredFields(['uid', 'app', 'v', 'savedAt', 'updatedAt', 'state', 'ink', 'prefs'])
+        && hasOnlyAllowedFields(['uid', 'app', 'v', 'savedAt', 'updatedAt', 'state', 'ink', 'prefs'])
+        && data.uid is string
+        && data.uid == request.auth.uid
+        && data.uid == request.auth.uid
+        && data.app == 'pattern-english'
+        && data.v is int
+        && data.v >= 1
+        && data.v <= 20
+        && isIsoTime(data.savedAt)
+        && data.updatedAt is timestamp
+        && isValidState(data.state)
+        && isStringMap(data.ink, 400)
+        && isValidPrefs(data.prefs);
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidProgress() && request.resource.data.uid == userId;
+      allow update: if isOwner(userId)
+        && isValidProgress()
+        && uidUnchanged()
+        && request.resource.data.uid == userId
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.app == resource.data.app;
+      allow delete: if isOwner(userId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
