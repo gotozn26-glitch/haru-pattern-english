@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8">
+<html lang="ko" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://www.gstatic.com https://www.googleapis.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://lh3.googleusercontent.com https://www.gstatic.com; connect-src https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://haru-pattern-eng.firebaseio.com https://haru-pattern-eng.firebaseapp.com; frame-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com; child-src https://accounts.google.com https://haru-pattern-eng.firebaseapp.com">
 <style>html{color-scheme:light}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -9,154 +9,164 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: a study notebook — day strip on top, one pattern card with five step tabs; the pattern itself is the hero, marked with a highlighter. */
-:root{
-  --bg:#EDF0F3; --paper:#FFFFFF; --ink:#16202A; --muted:#5A6672; --line:#D6DDE4; --soft:#F5F7F9;
-  --mark:#FFE15C; --mark-ink:#16202A; --mark-fill:linear-gradient(transparent 38%, #FFE15C 38%, #FFE15C 92%, transparent 92%); --mark-text:inherit; --mark-line:none; --accent:#2446D8; --accent-ink:#FFFFFF;
+/* Layout: one quiet study page — today's pattern is the hero, areas split by soft fills not borders. Light is the default. */
+:root, :root[data-theme="light"]{
+  --bg:#F6F5F2; --paper:#FFFFFF; --ink:#1C1B19; --muted:#7A756C; --line:#EFEDE8; --soft:#F3F1EC;
+  --cream:#FFF6E0; --review:#EEF2FF; --note:#E8F6F0;
+  --mark:#F6D56A; --mark-ink:#1C1B19; --mark-fill:linear-gradient(transparent 38%, #FFE8A3 38%, #FFE8A3 92%, transparent 92%); --mark-text:inherit; --mark-line:none; --accent:#1C1B19; --accent-ink:#FFFFFF;
   --ok:#137F65; --ok-bg:#E3F4EE; --bad:#C23E2C; --bad-bg:#FBE8E4; --warn:#9A6A00; --warn-bg:#FFF4D6;
-  --pi-ink:#2A2418; --pi-yellow:#FFF0A3; --pi-pink:#FFD3E2; --pi-blue:#CFE8FF; --pi-purple:#E4D9FF; --pi-green:#CFF0D6; --pi-shadow:0 2px 6px rgba(20,30,40,.12);
+  --pi-ink:#2A2418; --pi-yellow:#FFF0A3; --pi-pink:#FFD3E2; --pi-blue:#CFE8FF; --pi-purple:#E4D9FF; --pi-green:#CFF0D6; --pi-shadow:0 2px 6px rgba(28,27,25,.08);
+  --lift:0 1px 2px rgba(28,27,25,.05);
   --f-display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --f-body:"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --pi-ink:#1E1A12; --pi-yellow:#E8D575; --pi-pink:#E6AFC3; --pi-blue:#A6C9EA; --pi-purple:#C1B2EE; --pi-green:#A6D7B1; --pi-shadow:0 2px 8px rgba(0,0,0,.45);
-  --bg:#0E1318; --paper:#161D25; --ink:#E7ECF1; --muted:#98A4B0; --line:#29333E; --soft:#1C252F;
-  --mark:#E6C53A; --mark-ink:#11161B; --mark-fill:rgba(230,197,58,.16); --mark-text:#FFE58A; --mark-line:inset 0 -2px 0 #E6C53A; --accent:#8098FF; --accent-ink:#0E1318;
-  --ok:#43C9A1; --ok-bg:#12302A; --bad:#FF7E6B; --bad-bg:#3A1C17; --warn:#F0C24E; --warn-bg:#352B10; color-scheme:dark}}
 :root[data-theme="dark"]{
   --pi-ink:#1E1A12; --pi-yellow:#E8D575; --pi-pink:#E6AFC3; --pi-blue:#A6C9EA; --pi-purple:#C1B2EE; --pi-green:#A6D7B1; --pi-shadow:0 2px 8px rgba(0,0,0,.45);
   --bg:#0E1318; --paper:#161D25; --ink:#E7ECF1; --muted:#98A4B0; --line:#29333E; --soft:#1C252F;
-  --mark:#E6C53A; --mark-ink:#11161B; --mark-fill:rgba(230,197,58,.16); --mark-text:#FFE58A; --mark-line:inset 0 -2px 0 #E6C53A; --accent:#8098FF; --accent-ink:#0E1318;
-  --ok:#43C9A1; --ok-bg:#12302A; --bad:#FF7E6B; --bad-bg:#3A1C17; --warn:#F0C24E; --warn-bg:#352B10; color-scheme:dark}
+  --cream:#2A2616; --review:#1A2233; --note:#14241F;
+  --mark:#E6C53A; --mark-ink:#11161B; --mark-fill:rgba(230,197,58,.16); --mark-text:#FFE58A; --mark-line:inset 0 -2px 0 #E6C53A; --accent:#E7ECF1; --accent-ink:#0E1318;
+  --ok:#43C9A1; --ok-bg:#12302A; --bad:#FF7E6B; --bad-bg:#3A1C17; --warn:#F0C24E; --warn-bg:#352B10;
+  --lift:0 1px 2px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
-.wrap{max-width:860px;margin:0 auto;padding-block:20px 110px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:16px}
+.wrap{max-width:860px;margin:0 auto;padding-block:24px 110px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:18px}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 mark{background:var(--mark-fill);color:var(--mark-text);padding:0 2px;border-radius:2px;box-shadow:var(--mark-line)}
 .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 
 /* header */
-header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand h1{font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1.1;margin:2px 0 0;letter-spacing:-.01em}
 .stats{display:flex;gap:8px;flex-wrap:wrap}
-.stat{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stat{background:var(--paper);border:0;border-radius:999px;padding:6px 14px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;box-shadow:var(--lift)}
 .stat b{color:var(--ink)}
+.account-btn{font-weight:700;color:var(--ink);padding:8px 16px}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.chipbtn{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;font-size:13px}
-.chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chipbtn{border:0;background:var(--soft);border-radius:999px;padding:6px 12px;font-size:13px}
+.chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 
 /* day strip */
 .days{display:flex;flex-direction:column;gap:8px}
-.days-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.days-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.nav-arrow{width:32px;height:32px;border:1px solid var(--line);background:var(--paper);border-radius:8px;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding-bottom:2px}
+.days-bar{display:flex;align-items:stretch;background:var(--paper);border:0;border-radius:16px;overflow:hidden;box-shadow:var(--lift)}
+.nav-arrow{width:44px;border:0;background:transparent;border-radius:0;font-size:22px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding-bottom:2px;flex:0 0 auto}
 .nav-arrow:disabled{opacity:.35;cursor:not-allowed}
-.days-select{height:32px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:0 8px;font:inherit;font-size:13px;font-variant-numeric:tabular-nums}
-.days-done{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.review-btn{height:32px;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:0 12px;font-size:13px}
-.review-btn[aria-current="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.days-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
-.day{height:44px;border:1px solid var(--line);background:var(--paper);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-mono);color:var(--muted);position:relative;padding:0;min-width:0}
-.day span{font-size:9px;letter-spacing:.06em;line-height:1}
-.day b{font-family:var(--f-display);font-size:16px;color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
-.day.done{background:var(--soft)}
-.day.done::after{content:"";position:absolute;left:25%;right:25%;bottom:4px;height:3px;border-radius:2px;background:var(--mark)}
-.day.today{border-color:var(--accent);border-width:2px}
-.day[aria-current="true"]{background:var(--ink);border-color:var(--ink)}
-.day[aria-current="true"] b,.day[aria-current="true"]{color:var(--bg)}
-@media (max-width:520px){.days-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.days-done{display:none}}
+.days-select{height:32px;border:0;background:var(--soft);color:var(--ink);border-radius:10px;padding:0 10px;font:inherit;font-size:13px;font-variant-numeric:tabular-nums}
+.days-pick{flex:1;min-width:0;height:48px;border:0;background:transparent;color:var(--ink);padding:0 12px;font:inherit;font-weight:700;font-variant-numeric:tabular-nums}
+.days-sub{font-size:12px;color:var(--muted);padding:0 6px}
 
-/* pattern card */
-.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;position:relative}
-.card > .askbar{border-radius:0 0 16px 16px}
+/* account modal */
+.acct-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--soft);border:0;border-radius:12px;padding:4px}
+.acct-tab{border:0;background:none;border-radius:8px;padding:8px 10px;font-weight:700;color:var(--muted)}
+.acct-tab[aria-selected="true"]{background:var(--paper);color:var(--ink);box-shadow:var(--lift)}
+.my-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.my-stat{background:var(--soft);border:0;border-radius:14px;padding:12px}
+.my-stat b{display:block;font-family:var(--f-display);font-size:22px;line-height:1.15;font-variant-numeric:tabular-nums}
+.my-stat span{font-size:12px;color:var(--muted)}
+.my-list{display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow:auto}
+.st-group{background:var(--soft);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.st-group > .eyebrow{margin:0}
+.st-sub{background:var(--paper);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.st-sub h3{font-size:14px;margin:0}
+.st-group .txt,.st-group .days-select{background:var(--paper)}
+
+/* pattern card — lesson / review / notes use soft fills */
+.card{background:var(--paper);border:0;border-radius:20px;position:relative;box-shadow:var(--lift);overflow:hidden}
+.card.is-lesson .hero{background:var(--cream)}
+.card.is-review .hero{background:var(--review)}
+.card.is-journal .hero{background:var(--note)}
+.card > .askbar{border-radius:0 0 20px 20px}
 .pi-layer{position:absolute;inset:0;pointer-events:none;z-index:5}
 .pi-layer .postit{position:absolute;pointer-events:auto;cursor:grab;touch-action:none;user-select:none}
 .pi-layer .postit.drag{cursor:grabbing;box-shadow:0 10px 24px rgba(0,0,0,.25);transform:rotate(0)}
 .pi-layer .postit .pi-more{user-select:text}
-.hero{padding:22px 22px 18px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.hero{padding:24px 22px 20px;border:0;display:flex;flex-direction:column;gap:6px}
 .hero .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tag{font-size:12px;border-radius:6px;padding:1px 8px;background:var(--soft);border:1px solid var(--line);color:var(--muted)}
+.tag{font-size:12px;border-radius:999px;padding:2px 9px;background:rgba(28,27,25,.06);border:0;color:var(--muted)}
 .pattern{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,6vw,46px);line-height:1.08;letter-spacing:-.02em;margin:4px 0 0;text-wrap:balance}
 .pattern-ko{font-size:17px;color:var(--muted);margin:0}
-.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto}
-.tab{border:0;background:none;padding:12px 12px 10px;font-size:14px;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;display:flex;gap:6px;align-items:center}
-.tab .n{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border-radius:999px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
-.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:700}
-.tab[aria-selected="true"] .n{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tabs{display:flex;gap:4px;margin:12px 12px 0;padding:4px;border:0;background:var(--soft);border-radius:14px;overflow-x:auto}
+.tab{border:0;background:none;padding:9px 12px;font-size:13px;color:var(--muted);border-radius:10px;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tab .n{font-family:var(--f-mono);font-size:11px;border:0;background:rgba(28,27,25,.06);border-radius:999px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+.tab[aria-selected="true"]{color:var(--ink);background:var(--paper);font-weight:700;box-shadow:var(--lift)}
+.tab[aria-selected="true"] .n{background:var(--ink);color:var(--paper)}
 .panel{padding:20px 22px 24px;display:flex;flex-direction:column;gap:16px}
 .panel h3{font-size:16px;margin:0}
 .lead{margin:0;max-width:62ch}
 .formula{display:flex;flex-direction:column;gap:6px}
-.formula code{font-family:var(--f-mono);font-size:14px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:block;overflow-x:auto}
+.formula code{font-family:var(--f-mono);font-size:14px;background:var(--soft);border:0;border-radius:12px;padding:10px 12px;display:block;overflow-x:auto}
 
 /* example rows */
-.rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+.rows{display:flex;flex-direction:column;gap:8px;border:0}
+.row{display:grid;grid-template-columns:40px 1fr;gap:12px;padding:12px 14px;border:0;border-radius:14px;background:var(--soft);align-items:start}
 .row > div{min-width:0}
 .en{font-family:var(--f-display);font-size:19px;font-weight:500;line-height:1.35}
 .ko{color:var(--muted);font-size:14px}
 .sit{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
-.play{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--soft);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.play{width:36px;height:36px;border-radius:50%;border:0;background:var(--paper);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:var(--lift)}
 .play svg{width:14px;height:14px;fill:currentColor}
-.play.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.play.on{background:var(--ink);color:var(--paper)}
 .hide-en .en{filter:blur(6px);user-select:none}
 .hide-ko .ko{display:none}
 .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.btn{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:500}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn{border:0;background:var(--soft);border-radius:12px;padding:9px 14px;font-size:14px;font-weight:500}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.mark{background:var(--mark);color:var(--mark-ink)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .note{font-size:13px;color:var(--muted);margin:0}
-.callout{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.callout{background:var(--soft);border:0;border-radius:14px;padding:12px 14px;font-size:14px}
 
 /* dialogue */
 .dlg{display:flex;flex-direction:column;gap:10px}
 .line{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
 .line > div{min-width:0}
 .who{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
-.bubble{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--paper)}
-.line.b .bubble{background:var(--soft)}
+.bubble{border:0;border-radius:14px;padding:10px 14px;background:var(--soft)}
+.line.b .bubble{background:var(--cream)}
 
 /* quiz */
 .qhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.bar{height:6px;background:var(--soft);border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:1}
+.bar{height:6px;background:var(--soft);border:0;border-radius:6px;overflow:hidden;flex:1}
 .bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
 .qtype{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .qprompt{font-size:18px;font-weight:700;margin:0}
 .qsub{font-family:var(--f-display);font-size:20px;margin:0}
 .opts{display:grid;gap:8px}
-.opt{text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:11px 14px;font-size:15px}
-.opt:hover:not(:disabled){border-color:var(--ink)}
-.opt.right{background:var(--ok-bg);border-color:var(--ok);color:var(--ink)}
-.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.opt{text-align:left;border:0;background:var(--soft);border-radius:12px;padding:11px 14px;font-size:15px}
+.opt:hover:not(:disabled){background:#E8E6E0}
+.opt.right{background:var(--ok-bg);color:var(--ink)}
+.opt.wrong{background:var(--bad-bg)}
 .opt.en-opt{font-family:var(--f-display);font-size:17px}
-.slot{min-height:52px;border:1px dashed var(--line);border-radius:10px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;background:var(--soft)}
+.slot{min-height:52px;border:0;border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;background:var(--soft)}
 .bank{display:flex;flex-wrap:wrap;gap:6px}
-.tok{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 10px;font-family:var(--f-display);font-size:16px}
+.tok{border:0;background:var(--paper);border-radius:10px;padding:6px 10px;font-family:var(--f-display);font-size:16px;box-shadow:var(--lift)}
 .tok.used{visibility:hidden}
-input.txt,textarea.txt{width:100%;font:inherit;font-family:var(--f-display);font-size:18px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input.txt,textarea.txt{width:100%;font:inherit;font-family:var(--f-display);font-size:18px;color:var(--ink);background:var(--soft);border:0;border-radius:12px;padding:10px 12px}
 textarea.txt{min-height:84px;resize:vertical}
 .fb{border-radius:12px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px}
-.fb.ok{background:var(--ok-bg);color:var(--ink);border:1px solid var(--ok)}
-.fb.bad{background:var(--bad-bg);color:var(--ink);border:1px solid var(--bad)}
-.fb.mid{background:var(--warn-bg);color:var(--ink);border:1px solid var(--warn)}
+.fb.ok{background:var(--ok-bg);color:var(--ink)}
+.fb.bad{background:var(--bad-bg);color:var(--ink)}
+.fb.mid{background:var(--warn-bg);color:var(--ink)}
 .fb strong{font-size:15px}
 .fb .ans{font-family:var(--f-display);font-size:17px}
 .result{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .score{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
 .score small{font-size:22px;color:var(--muted);font-weight:500}
 .review-list{display:flex;flex-direction:column;gap:6px;width:100%}
-.review-list div{font-size:14px;padding:8px 12px;border-radius:8px;background:var(--soft);border:1px solid var(--line)}
+.review-list div{font-size:14px;padding:10px 12px;border-radius:12px;background:var(--soft);border:0}
 
 /* make */
 .prompts{display:grid;gap:8px}
-.prompt-item{border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;gap:10px;align-items:baseline;background:var(--soft)}
+.prompt-item{border:0;border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:baseline;background:var(--soft)}
 .prompt-item span{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .mine{display:flex;flex-direction:column;gap:8px}
-.mine-item{border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+.mine-item{border:0;border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:4px;background:var(--soft)}
 .mine-item .en{font-size:17px}
 .mine-item .fix{font-size:14px;color:var(--ok)}
 .mine-item .tip{font-size:13px;color:var(--muted)}
@@ -164,10 +174,10 @@ textarea.txt{min-height:84px;resize:vertical}
 .x{border:0;background:none;color:var(--muted);font-size:13px}
 
 .mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:6px}
-.mk-chip{height:34px;border:1px solid var(--line);background:var(--paper);border-radius:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.mk-chip.done{background:var(--ok-bg);border-color:var(--ok);color:var(--ink)}
-.mk-chip.cur{border:2px solid var(--ink);color:var(--ink);font-weight:700}
-.mk-card{border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--soft)}
+.mk-chip{height:34px;border:0;background:var(--soft);border-radius:10px;font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mk-chip.done{background:var(--ok-bg);color:var(--ink)}
+.mk-chip.cur{background:var(--ink);color:var(--paper);font-weight:700}
+.mk-card{border:0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--soft)}
 .mk-ko{font-size:21px;font-weight:700;line-height:1.4}
 .mk-out:empty{display:none}
 .qa{display:flex;flex-direction:column;gap:8px;margin-top:6px;align-items:flex-start}
@@ -184,11 +194,11 @@ textarea.txt{min-height:84px;resize:vertical}
 .pi-q{font-weight:700}
 .pi-more{white-space:pre-wrap;border-top:1px dashed rgba(0,0,0,.25);padding-top:6px}
 .pi-toggle{align-self:flex-start;border:0;background:rgba(0,0,0,.08);color:inherit;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700}
-.ask-mini{border:1px dashed var(--line);background:none;color:var(--muted);border-radius:999px;padding:2px 10px;font-size:12px}
-.ask-mini:hover{color:var(--ink);border-color:var(--ink)}
-.askform{width:100%;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--paper)}
-.ask-ta{font-family:var(--f-body);font-size:15px}
-.askbar{padding:16px 22px 18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;background:var(--soft)}
+.ask-mini{border:0;background:var(--paper);color:var(--muted);border-radius:999px;padding:3px 10px;font-size:12px;box-shadow:var(--lift)}
+.ask-mini:hover{color:var(--ink)}
+.askform{width:100%;display:flex;flex-direction:column;gap:8px;border:0;border-radius:14px;padding:12px;background:var(--soft)}
+textarea.txt.ask-ta{font-family:var(--f-body);font-size:15px;min-height:0;height:64px;resize:vertical;line-height:1.45}
+.askbar{padding:16px 22px 18px;border:0;display:flex;flex-direction:column;gap:10px;background:var(--soft)}
 .askbar h3{font-size:16px;margin:0}
 .askform-flat{border:0;padding:0;background:none}
 .askbar-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -203,16 +213,17 @@ textarea.txt{min-height:84px;resize:vertical}
 .pen-area:empty{display:none}
 .dock-row{display:flex;gap:8px}
 .pen-main.on[aria-expanded]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.askpanel{width:min(380px, calc(100vw - 32px));background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:8px}
+.askpanel{width:min(380px, calc(100vw - 32px));background:var(--paper);border:0;border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(28,27,25,.12);display:flex;flex-direction:column;gap:8px}
 .askp-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.askpanel .askform{border:0;padding:0}
-.pen-main{border:1px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:999px;padding:10px 18px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.askpanel .askform{border:0;padding:0;background:transparent;border-radius:0;gap:10px}
+.askpanel .ask-ta{background:var(--soft);height:64px}
+.pen-main{border:0;background:var(--paper);color:var(--ink);border-radius:999px;padding:10px 18px;font-weight:700;box-shadow:0 4px 16px rgba(28,27,25,.12)}
 .pen-main.on{background:var(--ink);color:var(--paper)}
-.pen-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.pen-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;background:var(--paper);border:0;border-radius:16px;padding:8px;box-shadow:0 6px 20px rgba(28,27,25,.1)}
 .pen-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--paper);background:var(--dot);box-shadow:0 0 0 1px var(--line)}
 .pen-dot.marker{border-radius:6px;width:34px;opacity:.8}
 .pen-dot.sel{box-shadow:0 0 0 2px var(--ink)}
-.pen-btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:5px 10px;font-size:13px}
+.pen-btn{border:0;background:var(--soft);border-radius:8px;padding:5px 10px;font-size:13px}
 .pen-btn.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .pen-msg{background:var(--ink);color:var(--paper);font-size:13px;border-radius:10px;padding:8px 12px;max-width:280px}
 .wline{display:flex;gap:8px;margin-top:6px}
@@ -224,13 +235,13 @@ textarea.txt{min-height:84px;resize:vertical}
 .w-res.ok b{color:var(--ok)} .w-res.near b{color:var(--warn)} .w-res.bad b{color:var(--bad)} .w-res.shown b{color:var(--muted)}
 .w-res .en{font-size:17px}
 .play:disabled{opacity:.35;cursor:not-allowed}
-.modal{position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal-box{max-height:calc(100vh - 32px);overflow-y:auto;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:20px;width:min(460px,100%);display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.modal{position:fixed;inset:0;background:rgba(28,27,25,.28);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{max-height:calc(100vh - 32px);overflow-y:auto;background:var(--paper);color:var(--ink);border:0;border-radius:20px;padding:20px;width:min(500px,100%);display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 50px rgba(28,27,25,.16)}
 .modal-box h3{margin:0;font-size:18px}
 .modal-box a{color:var(--accent)}
 .st-in{font-family:var(--f-body);font-size:15px;width:100%}
 .st-btn{cursor:pointer;color:var(--ink)}
-.sp-btn{background:var(--mark);border-color:var(--mark);color:var(--mark-ink);font-weight:700}
+.sp-btn{background:var(--mark);border:0;color:var(--mark-ink);font-weight:700}
 .sponsor-box{width:min(280px,100%);padding:16px;align-items:center;text-align:center;gap:12px}
 .sponsor-box h3{font-size:16px;font-weight:700}
 .sponsor-box img{width:220px;height:220px;background:#fff;border-radius:8px;padding:8px;display:block}
@@ -246,12 +257,12 @@ footer.refs a:hover{text-decoration:underline}
   .row,.line{grid-template-columns:36px 1fr;gap:10px}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.seg-btn{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12px;color:var(--muted)}.seg-btn b{font-size:15px;color:var(--ink)}.seg-btn i{font-style:normal;font-size:11px;color:var(--ok)}.seg-btn.on{border:2px solid var(--accent);background:var(--soft)}.seg-btn span{text-align:center}.bk{border-top:1px solid var(--line);padding-top:12px;margin-top:4px;display:flex;flex-direction:column;gap:8px}.bk h3{font-size:16px;margin:0}
-.j-sec{display:flex;flex-direction:column;gap:8px;padding:4px 0 16px;border-bottom:1px solid var(--line)}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.seg-btn{border:0;background:var(--paper);border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12px;color:var(--muted)}.seg-btn b{font-size:15px;color:var(--ink)}.seg-btn i{font-style:normal;font-size:11px;color:var(--ok)}.seg-btn.on{background:var(--ink);color:var(--paper)}.seg-btn.on b{color:var(--paper)}.seg-btn span{text-align:center}.bk{display:flex;flex-direction:column;gap:10px}
+.j-sec{display:flex;flex-direction:column;gap:8px;padding:4px 0 16px}
 .j-sec:last-child{border-bottom:0}
 .j-sec h3{margin:0;font-size:15px}
-.j-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);display:flex;flex-direction:column;gap:4px}
-.j-item.bad{background:var(--bad-bg);border-color:rgba(194,62,44,.35)}
+.j-item{padding:10px 12px;border:0;border-radius:12px;background:var(--soft);display:flex;flex-direction:column;gap:4px}
+.j-item.bad{background:var(--bad-bg)}
 .j-user{font-size:13px;color:var(--muted)}
 .j-q{font-size:13px;font-weight:700}
 .print-sheet{display:none}
@@ -798,7 +809,7 @@ function applyRemoteDoc(d){
   if (d.prefs && d.prefs.voice) try { localStorage.setItem("pattern-english-voice3", d.prefs.voice); } catch(e) {}
   if (d.prefs && d.prefs.hide != null) try { localStorage.setItem("pattern-english-hide-notes", d.prefs.hide); } catch(e) {}
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
-  if (!navigated) { cur = startDay(); dayPage = null; tab = "learn"; }
+  if (!navigated) resetToStartDay();
   applyingRemote = false;
   render();
   return true;
@@ -806,7 +817,7 @@ function applyRemoteDoc(d){
 async function attachFirebaseUser(user){
   fbUser = user;
   if (fbUnsub) { try { fbUnsub(); } catch(e) {} fbUnsub = null; }
-  if (!user) { setSync("이 기기에 저장됨"); initCloud(); return; }
+  if (!user) { setSync("이 기기에 저장됨"); initCloud(); renderStats(); return; }
   setSync("계정에서 불러오는 중…");
   const ref = fbDocRef();
   try {
@@ -822,8 +833,10 @@ async function attachFirebaseUser(user){
       setSync(syncLabel());
     });
     setSync(syncLabel());
+    renderStats();
   } catch(e) {
     setSync("계정 저장 실패 · 이 기기에만 저장됨");
+    renderStats();
   }
 }
 async function signInGoogle(){
@@ -846,6 +859,7 @@ async function signOutGoogle(){
   if (fbAuth) await fbAuth.signOut();
   fbUser = null;
   setSync("이 기기에 저장됨");
+  renderStats();
 }
 function idbOpen(){
   return new Promise((res, rej) => {
@@ -906,7 +920,7 @@ async function connectCloudFolder(dir){
   if (d && d.app === "pattern-english" && d.state) {
     mergeIncoming(d.state);
     mergeInk(d.ink);
-    if (!navigated) { cur = startDay(); dayPage = null; tab = "learn"; }
+    if (!navigated) resetToStartDay();
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
     render();
   }
@@ -926,7 +940,7 @@ async function initCloud(){
   if (d && d.app === "pattern-english" && d.state) {
     mergeIncoming(d.state);
     mergeInk(d.ink);
-    if (!navigated) { cur = startDay(); dayPage = null; tab = "learn"; }
+    if (!navigated) resetToStartDay();
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
     render();
   }
@@ -952,7 +966,7 @@ async function initRemote(){
     const snap = await dbRef.get();
     if (snap.exists) {
       mergeIncoming(snap.data() || {});
-      if (!navigated) { cur = startDay(); dayPage = null; tab = "learn"; }
+      if (!navigated) resetToStartDay();
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
       render();
     } else if (Object.keys(state.done).length || Object.keys(state.made).length) {
@@ -1090,20 +1104,78 @@ const SETTINGS_MSG = {
   bad_model: ["bad", "선택한 모델을 쓸 수 없어요. 다른 모델을 골라 주세요."]
 };
 let settingsView = null;   // 설정 창에서 보고 있는 공급자
-async function openSettings(reason, detail){
+let accountPane = "my";
+function closeAccount(){
+  const m = document.getElementById("settings");
+  if (m) m.hidden = true;
+  settingsView = null;
+}
+function openMy(){ accountPane = "my"; return openAccount(); }
+function openSettings(reason, detail){ accountPane = "setting"; return openAccount(reason, detail); }
+async function openAccount(reason, detail){
   let m = document.getElementById("settings");
   if (!m) { m = el("div","modal"); m.id = "settings"; document.body.appendChild(m); m.addEventListener("click", e => { if (e.target === m) m.hidden = true; }); }
+  if (reason) accountPane = "setting";
+  m.hidden = false; m.innerHTML = "";
+  const box = el("div","modal-box"); box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-labelledby","st-h");
+  const h = el("h3", null, accountPane === "my" ? "MY" : "Setting"); h.id = "st-h"; box.appendChild(h);
+  const tabs = el("div","acct-tabs"); tabs.setAttribute("role","tablist");
+  [["my","MY"],["setting","Setting"]].forEach(([id, label]) => {
+    const t = el("button","acct-tab", label); t.type = "button"; t.setAttribute("role","tab"); t.setAttribute("aria-selected", accountPane === id);
+    t.onclick = () => { accountPane = id; openAccount(); };
+    tabs.appendChild(t);
+  });
+  box.appendChild(tabs);
+  m.appendChild(box);
+  if (accountPane === "my") { fillMyPane(box); return; }
+  await fillSettingPane(box, reason, detail);
+}
+function fillMyPane(box){
+  const done = Object.keys(state.done).length;
+  const made = Object.values(state.made).reduce((a,b)=>a+b.length,0);
+  const today = firstOpen();
+  const stats = el("div","my-stats");
+  [["완료", done + "/" + P.length],["연속", streak() + "일"],["내 문장", made + "개"]].forEach(([label, val]) => {
+    const s = el("div","my-stat"); s.innerHTML = `<b>${val}</b><span>${label}</span>`; stats.appendChild(s);
+  });
+  box.appendChild(stats);
+  const acts = el("div","controls");
+  const toToday = el("button","btn primary","오늘의 Day " + (today + 1)); toToday.type = "button";
+  toToday.onclick = () => { closeAccount(); goToDay(today); };
+  const toNote = el("button","btn","오늘 노트"); toNote.type = "button";
+  toNote.onclick = () => { closeAccount(); navigated = true; stopSpeech(); journalAt = todayKey(); cur = "journal"; quiz = null; render(); };
+  acts.append(toToday, toNote); box.appendChild(acts);
+  box.appendChild(el("span","eyebrow","오답노트"));
+  const list = el("div","my-list");
+  const wrongs = state.wrongs || [];
+  if (!wrongs.length) list.appendChild(el("p","note","아직 틀린 문제가 없어요. 퀴즈나 문장 만들기에서 틀린 문장이 여기 모여요."));
+  else wrongs.slice(0, 12).forEach(w => {
+    const item = wrongItem(w);
+    if (typeof w.day === "number") {
+      const go = el("button","btn","Day " + (w.day + 1) + "로"); go.type = "button";
+      go.onclick = () => { closeAccount(); goToDay(w.day, {warmup:false}); };
+      item.appendChild(go);
+    }
+    list.appendChild(item);
+  });
+  box.appendChild(list);
+  const foot = el("div","controls");
+  const sp = el("button","btn sp-btn","후원하기"); sp.type = "button";
+  sp.onclick = () => { closeAccount(); openSponsor(); };
+  const close = el("button","btn","닫기"); close.type = "button"; close.onclick = closeAccount;
+  foot.append(sp, close); box.appendChild(foot);
+}
+async function fillSettingPane(box, reason, detail){
   const s = await window.desktop.getSettings();
   const PV = AIProviders.PROVIDERS;
   const pv = settingsView && PV[settingsView] ? settingsView : s.provider; settingsView = pv;
   const cur = s.providers[pv];
-  m.hidden = false; m.innerHTML = "";
-  const box = el("div","modal-box"); box.setAttribute("role","dialog"); box.setAttribute("aria-modal","true"); box.setAttribute("aria-labelledby","st-h");
-  const h = el("h3", null, "설정 · AI 기능"); h.id = "st-h"; box.appendChild(h);
-  box.appendChild(el("p","note","질문하기와 AI 첨삭은 본인의 AI API 키로 동작해요. " + (window.desktop.keyNote || "키는 이 컴퓨터에만 암호화되어 저장되고,") + " 사용 요금은 키를 만든 계정에 청구돼요."));
-  if (SETTINGS_MSG[reason]) { const w = el("div","fb " + SETTINGS_MSG[reason][0]); w.textContent = SETTINGS_MSG[reason][1]; box.appendChild(w); }
+  const ai = el("div","st-group");
+  ai.appendChild(el("span","eyebrow","AI 키"));
+  ai.appendChild(el("p","note","질문하기와 AI 첨삭은 본인의 AI API 키로 동작해요. " + (window.desktop.keyNote || "키는 이 컴퓨터에만 암호화되어 저장되고,") + " 사용 요금은 키를 만든 계정에 청구돼요."));
+  if (SETTINGS_MSG[reason]) { const w = el("div","fb " + SETTINGS_MSG[reason][0]); w.textContent = SETTINGS_MSG[reason][1]; ai.appendChild(w); }
 
-  const lab0 = el("span","sit","사용할 AI"); box.appendChild(lab0);
+  const lab0 = el("span","sit","사용할 AI"); ai.appendChild(lab0);
   const seg = el("div","seg"); seg.setAttribute("role","radiogroup"); seg.setAttribute("aria-label","사용할 AI");
   Object.entries(PV).forEach(([id, P]) => {
     const b = el("button","seg-btn" + (id === pv ? " on" : "")); b.type = "button"; b.setAttribute("role","radio"); b.setAttribute("aria-checked", id === pv);
@@ -1111,13 +1183,13 @@ async function openSettings(reason, detail){
     b.onclick = () => { settingsView = id; openSettings(); };
     seg.appendChild(b);
   });
-  box.appendChild(seg);
-  if (pv !== s.provider) box.appendChild(el("p","note","지금은 " + PV[s.provider].label + "를 쓰고 있어요. 이 AI로 바꾸려면 키를 넣고 저장을 누르세요."));
+  ai.appendChild(seg);
+  if (pv !== s.provider) ai.appendChild(el("p","note","지금은 " + PV[s.provider].label + "를 쓰고 있어요. 이 AI로 바꾸려면 키를 넣고 저장을 누르세요."));
 
   const P = PV[pv];
-  const lab = el("label","sit", P.label + " API 키" + (cur.hasKey ? "  · 저장됨 (" + cur.keyHint + ")" : "")); lab.htmlFor = "st-key"; box.appendChild(lab);
-  const key = el("input","txt st-in"); key.id = "st-key"; key.type = "password"; key.autocomplete = "off"; key.spellcheck = false; key.placeholder = cur.hasKey ? "바꾸려면 새 키를 붙여 넣으세요" : P.keyHint; box.appendChild(key);
-  const lab2 = el("label","sit","답변 모델"); lab2.htmlFor = "st-model"; box.appendChild(lab2);
+  const lab = el("label","sit", P.label + " API 키" + (cur.hasKey ? "  · 저장됨 (" + cur.keyHint + ")" : "")); lab.htmlFor = "st-key"; ai.appendChild(lab);
+  const key = el("input","txt st-in"); key.id = "st-key"; key.type = "password"; key.autocomplete = "off"; key.spellcheck = false; key.placeholder = cur.hasKey ? "바꾸려면 새 키를 붙여 넣으세요" : P.keyHint; ai.appendChild(key);
+  const lab2 = el("label","sit","답변 모델"); lab2.htmlFor = "st-model"; ai.appendChild(lab2);
   const model = el("select","days-select st-in"); model.id = "st-model";
   P.models.forEach(([v,t]) => model.appendChild(new Option(t, v)));
   model.appendChild(new Option("직접 입력…", "__custom"));
@@ -1125,18 +1197,20 @@ async function openSettings(reason, detail){
   const known = P.models.some(([v]) => v === cur.model);
   model.value = known ? cur.model : "__custom"; custom.value = known ? "" : cur.model; custom.hidden = known;
   model.onchange = () => { custom.hidden = model.value !== "__custom"; if (!custom.hidden) custom.focus(); };
-  box.append(model, custom);
+  ai.append(model, custom);
   const pickedModel = () => model.value === "__custom" ? custom.value.trim() : model.value;
 
   const c = el("div","controls");
-  const save = el("button","btn primary", pv === s.provider ? "저장" : "이 AI로 저장"); const test = el("button","btn","연결 테스트"); const close = el("button","btn","닫기");
+  const save = el("button","btn primary", pv === s.provider ? "저장" : "이 AI로 저장"); const test = el("button","btn","연결 테스트");
   c.append(save, test);
   if (cur.hasKey) { const del = el("button","btn","키 삭제"); del.onclick = async () => { await window.desktop.setSettings({provider: pv, key: ""}); openSettings(); }; c.appendChild(del); }
-  c.appendChild(close); box.appendChild(c);
-  const msg = el("p","note"); box.appendChild(msg);
-  const help = el("p","note"); help.innerHTML = `키 발급: <a href="${P.keyUrl}" target="_blank" rel="noopener">${P.keyUrl.replace(/^https:\/\//,"")}</a> — ${P.keySteps}`; box.appendChild(help);
+  ai.appendChild(c);
+  const msg = el("p","note"); ai.appendChild(msg);
+  const help = el("p","note"); help.innerHTML = `키 발급: <a href="${P.keyUrl}" target="_blank" rel="noopener">${P.keyUrl.replace(/^https:\/\//,"")}</a> — ${P.keySteps}`; ai.appendChild(help);
+  box.appendChild(ai);
   box.appendChild(backupSection());
-  m.appendChild(box);
+  const close = el("button","btn","닫기"); close.type = "button"; close.onclick = closeAccount;
+  const foot = el("div","controls"); foot.appendChild(close); box.appendChild(foot);
 
   const commit = async () => {
     const pm = pickedModel(); if (model.value === "__custom" && !pm) { msg.textContent = "모델 이름을 입력해 주세요."; custom.focus(); return false; }
@@ -1150,16 +1224,8 @@ async function openSettings(reason, detail){
     const r = await window.desktop.ask("Reply with exactly: OK", 20); test.disabled = false;
     msg.textContent = r.error ? ((SETTINGS_MSG[r.error] || [0, "연결하지 못했어요: " + (r.message || r.error)])[1]) : P.label + " 연결됐어요! AI 기능을 쓸 수 있어요.";
   };
-  close.onclick = () => { m.hidden = true; settingsView = null; };
+  close.onclick = closeAccount;
   setTimeout(() => (cur.hasKey ? model : key).focus(), 0);
-}
-function addSettingsButton(){
-  const st = $("#stats"); if (!st || st.querySelector(".st-btn:not(.sp-btn)")) return;
-  const b = el("button","stat st-btn","설정·백업"); b.type = "button"; b.onclick = () => openSettings(); st.appendChild(b);
-}
-function addSponsorButton(){
-  const st = $("#stats"); if (!st || st.querySelector(".sp-btn")) return;
-  const b = el("button","stat st-btn sp-btn","후원하기"); b.type = "button"; b.onclick = openSponsor; st.appendChild(b);
 }
 function openSponsor(){
   let m = document.getElementById("sponsor");
@@ -1196,17 +1262,20 @@ function parseBackup(raw){
   return d;
 }
 function backupSection(){
-  const wrap = el("div","bk");
-  wrap.appendChild(el("h3", null, "구글 계정으로 동기화"));
+  const wrap = el("div","st-group");
+  wrap.appendChild(el("span","eyebrow","공부 기록 맞추기"));
+  wrap.appendChild(el("p","note","계정이나 파일로 다른 컴퓨터와 진도를 맞춰요. 위 AI 키와는 별개예요."));
+  const sync = el("div","st-sub");
+  sync.appendChild(el("h3", null, "계정 동기화"));
   if (!fbHttps()) {
-    wrap.appendChild(el("p","note","구글 로그인은 인터넷 주소(https)에서만 돼요. 퍼블리시된 사이트에서 같은 구글 계정으로 로그인하면 컴퓨터끼리 공부가 이어져요."));
+    sync.appendChild(el("p","note","구글 로그인은 인터넷 주소(https)에서만 돼요. 퍼블리시된 사이트에서 같은 구글 계정으로 로그인하면 컴퓨터끼리 공부가 이어져요."));
   } else if (fbUser) {
-    wrap.appendChild(el("p","note","지금 " + (fbUser.email || "Google") + "으로 저장 중이에요. 다른 컴퓨터에서도 같은 계정으로 로그인하면 오늘 문장·오답노트·포스트잇이 맞춰져요."));
+    sync.appendChild(el("p","note","지금 " + (fbUser.email || "Google") + "으로 저장 중이에요. 다른 컴퓨터에서도 같은 계정으로 로그인하면 오늘 문장·오답노트·포스트잇이 맞춰져요."));
     const out = el("button","btn","로그아웃"); out.type = "button";
     out.onclick = async () => { try { await signOutGoogle(); openSettings(); } catch(e) {} };
-    wrap.appendChild(out);
+    sync.appendChild(out);
   } else {
-    wrap.appendChild(el("p","note","Google로 로그인하면 이 컴퓨터와 다른 컴퓨터의 공부 기록이 같은 계정에 저장돼요. 무료 Firebase 프로젝트에만 저장되고, GAMJA AILAB과는 섞이지 않아요."));
+    sync.appendChild(el("p","note","Google로 로그인하면 이 컴퓨터와 다른 컴퓨터의 공부 기록이 같은 계정에 저장돼요. 무료 Firebase 프로젝트에만 저장되고, GAMJA AILAB과는 섞이지 않아요."));
     const login = el("button","btn primary","Google로 로그인"); login.type = "button";
     const status = el("p","note");
     login.onclick = async () => {
@@ -1222,19 +1291,21 @@ function backupSection(){
         else status.textContent = "로그인하지 못했어요. " + ((e && e.message) || "");
       }
     };
-    wrap.append(login, status);
+    sync.append(login, status);
   }
-  wrap.appendChild(el("h3", null, "파일로 맞추기"));
-  wrap.appendChild(el("p","note","로그인 없이 옮기려면 공부 기록을 파일 하나로 보내면 돼요."));
-  wrap.appendChild(el("p","note","1. 이 컴퓨터에서 ‘보내기’ → 2. 에어드롭·카톡·메일로 전달 → 3. 저쪽 컴퓨터에서 ‘불러오기’."));
+  wrap.appendChild(sync);
+  const file = el("div","st-sub");
+  file.appendChild(el("h3", null, "파일로 맞추기"));
+  file.appendChild(el("p","note","로그인 없이 옮기려면 공부 기록을 파일 하나로 보내면 돼요."));
+  file.appendChild(el("p","note","1. 이 컴퓨터에서 ‘보내기’ → 2. 에어드롭·카톡·메일로 전달 → 3. 저쪽 컴퓨터에서 ‘불러오기’."));
   const msg = el("p","note");
   const c = el("div","controls");
   const send = el("button","btn primary","이 컴퓨터 기록 보내기"); send.type = "button";
   const recv = el("button","btn","받은 기록 불러오기"); recv.type = "button";
   const paste = el("button","btn","붙여넣기"); paste.type = "button";
   const fi = el("input"); fi.type = "file"; fi.accept = ".json,application/json"; fi.hidden = true; fi.id = "bk-file";
-  c.append(send, recv, paste, fi); wrap.appendChild(c);
-  wrap.appendChild(msg);
+  c.append(send, recv, paste, fi); file.appendChild(c);
+  file.appendChild(msg);
   send.onclick = async () => {
     const file = backupFile();
     try {
@@ -1246,7 +1317,7 @@ function backupSection(){
     } catch(e) { if (e && e.name === "AbortError") return; }
     try {
       await navigator.clipboard.writeText(backupText());
-      msg.textContent = "기록을 복사했어요. 다른 컴퓨터의 설정에서 ‘붙여넣기’를 누르면 됩니다.";
+      msg.textContent = "기록을 복사했어요. 다른 컴퓨터의 MY → Setting에서 ‘붙여넣기’를 누르면 됩니다.";
     } catch(e) {
       downloadBackup();
       msg.textContent = "파일을 저장했어요. 그 파일을 카톡·메일·에어드롭으로 다른 기기에 보내세요.";
@@ -1284,7 +1355,7 @@ function backupSection(){
     try { arm(parseBackup(ta.value.trim()), taGo, ""); }
     catch(e) { msg.textContent = "붙여 넣은 내용이 이 앱 기록이 아니에요."; }
   };
-  wrap.append(ta, taGo);
+  file.append(ta, taGo);
 
   const extra = el("details"); extra.className = "note";
   extra.appendChild(Object.assign(document.createElement("summary"), {textContent:"파일로 저장 / 고급"}));
@@ -1306,7 +1377,8 @@ function backupSection(){
     c2.appendChild(gd);
   }
   extra.appendChild(c2);
-  wrap.appendChild(extra);
+  file.appendChild(extra);
+  wrap.appendChild(file);
   return wrap;
 }
 function applyBackup(d){
@@ -1319,7 +1391,8 @@ function applyBackup(d){
     if (d.prefs && d.prefs.hide != null) localStorage.setItem("pattern-english-hide-notes", d.prefs.hide);
   } catch(e) {}
   save(); Object.keys(ink).forEach(k => saveInk(+k));
-  navigated = false; cur = startDay(); dayPage = null; tab = "learn"; quiz = null; render();
+  navigated = false; cur = startDay(); dayPage = null; quiz = null;
+  tab = needsWarmup(cur) ? "warmup" : "learn"; render();
 }
 
 let samplePromise = window.desktop ? Promise.resolve(makeDesktopSample()) : (window.claude?.use ? claude.use("sample").catch(() => null) : Promise.resolve(null));
@@ -1334,54 +1407,70 @@ let cur = startDay();        // day index, or "review" / "journal"
 let tab = "learn";
 let quiz = null;
 let journalAt = null;
+const warmed = new Set();
+if (needsWarmup(cur)) tab = "warmup";
+
+function resetToStartDay(){
+  cur = startDay(); dayPage = null; quiz = null;
+  tab = needsWarmup(cur) ? "warmup" : "learn";
+}
+function doneDays(except){
+  return Object.keys(state.done).map(Number).filter(i => i >= 0 && i < P.length && i !== except);
+}
+function needsWarmup(i){
+  return typeof i === "number" && !warmed.has(i) && doneDays(i).length >= 1;
+}
+function goToDay(i, opts){
+  const warmup = !opts || opts.warmup !== false;
+  navigated = true; stopSpeech();
+  cur = i; dayPage = Math.floor(i / 10); quiz = null;
+  tab = warmup && needsWarmup(i) ? "warmup" : "learn";
+  render();
+}
+function finishWarmup(){
+  warmed.add(cur); tab = "learn"; quiz = null; render();
+}
 
 function renderStats(){
-  const done = Object.keys(state.done).length;
-  const made = Object.values(state.made).reduce((a,b)=>a+b.length,0);
-  $("#stats").innerHTML = `<span class="stat">완료 <b>${done}</b>/${P.length}</span><span class="stat">연속 <b>${streak()}</b>일</span><span class="stat">내 문장 <b>${made}</b>개</span>`;
-  addSponsorButton();
-  setTimeout(() => window.desktop && addSettingsButton(), 0);
+  const st = $("#stats"); if (!st) return;
+  st.innerHTML = "";
+  const logged = !!fbUser;
+  const b = el("button","stat account-btn", logged ? "MY" : "로그인"); b.type = "button";
+  b.setAttribute("aria-label", logged ? "내 공부와 설정" : "구글 계정으로 로그인");
+  b.onclick = () => logged ? openMy() : startHeaderLogin();
+  st.appendChild(b);
 }
-let dayPage = null;   // 10일 단위 페이지
-function renderDays(){
-  const nav = $("#days"); nav.innerHTML = ""; const today = firstOpen();
-  const pages = Math.ceil(P.length / 10);
-  if (dayPage == null) dayPage = Math.floor((typeof cur === "number" ? cur : today) / 10);
-  dayPage = Math.max(0, Math.min(pages - 1, dayPage));
-  const start = dayPage * 10, end = Math.min(P.length, start + 10);
-  const doneHere = P.slice(start, end).filter((_,k) => state.done[start + k]).length;
-
-  const head = el("div","days-head");
-  const prev = el("button","nav-arrow","‹"); prev.type = "button"; prev.setAttribute("aria-label","이전 10일"); prev.disabled = dayPage === 0;
-  const next = el("button","nav-arrow","›"); next.type = "button"; next.setAttribute("aria-label","다음 10일"); next.disabled = dayPage === pages - 1;
-  prev.onclick = () => { dayPage--; renderDays(); };
-  next.onclick = () => { dayPage++; renderDays(); };
-  const sel = el("select","days-select"); sel.id = "day-page"; sel.setAttribute("aria-label","10일 구간 선택");
-  for (let i = 0; i < pages; i++) { const s0 = i*10 + 1, s1 = Math.min(P.length, i*10 + 10); const n = P.slice(i*10, s1).filter((_,k) => state.done[i*10 + k]).length; sel.appendChild(new Option(`Day ${s0}–${s1}${n ? `  ·  ${n}/10 완료` : ""}`, i)); }
-  sel.value = dayPage; sel.onchange = () => { dayPage = +sel.value; renderDays(); };
-  const label = el("span","days-done", `이 구간 ${doneHere}/${end - start} 완료`);
-  const left = el("div","days-nav"); left.append(prev, sel, next);
-  const r = el("button","review-btn", "복습 퀴즈"); r.type = "button";
-  if (cur === "review") r.setAttribute("aria-current","true");
-  r.onclick = () => { navigated = true; stopSpeech(); cur = "review"; quiz = null; render(); };
-  const jn = el("button","review-btn", "오늘 노트"); jn.type = "button";
-  if (cur === "journal") jn.setAttribute("aria-current","true");
-  jn.onclick = () => { navigated = true; stopSpeech(); journalAt = todayKey(); cur = "journal"; quiz = null; render(); };
-  const toToday = el("button","review-btn","오늘의 Day"); toToday.type = "button";
-  toToday.onclick = () => { navigated = true; stopSpeech(); cur = firstOpen(); dayPage = Math.floor(cur / 10); tab = "learn"; quiz = null; render(); };
-  const right = el("div","days-nav"); right.append(toToday, jn, r);
-  head.append(left, right); nav.appendChild(head);
-
-  const grid = el("div","days-grid");
-  for (let i = start; i < end; i++) {
-    const p = P[i];
-    const b = el("button","day"+(state.done[i]?" done":"")+(i===today && !state.done[i]?" today":""), `<span>DAY</span><b>${i+1}</b>`);
-    b.type = "button"; b.title = p.pat; b.setAttribute("aria-label", `Day ${i+1}: ${p.pat}${state.done[i]?" (완료)":""}`);
-    if (cur === i) b.setAttribute("aria-current","true");
-    b.onclick = () => { navigated = true; stopSpeech(); cur = i; tab = "learn"; quiz = null; render(); };
-    grid.appendChild(b);
+async function startHeaderLogin(){
+  if (!fbAuth || !fbHttps()) { accountPane = "setting"; return openAccount(); }
+  try {
+    await signInGoogle();
+  } catch (e) {
+    const code = e && e.code;
+    if (code === "auth/popup-closed-by-user") return;
+    accountPane = "setting";
+    return openAccount();
   }
-  nav.appendChild(grid);
+}
+let dayPage = null;
+function currentDayIndex(){ return typeof cur === "number" ? cur : startDay(); }
+function renderDays(){
+  const nav = $("#days"); nav.innerHTML = "";
+  const idx = currentDayIndex();
+  const bar = el("div","days-bar");
+  const prev = el("button","nav-arrow","‹"); prev.type = "button"; prev.setAttribute("aria-label","이전 Day"); prev.disabled = idx <= 0;
+  const next = el("button","nav-arrow","›"); next.type = "button"; next.setAttribute("aria-label","다음 Day"); next.disabled = idx >= P.length - 1;
+  prev.onclick = () => goToDay(idx - 1);
+  next.onclick = () => goToDay(idx + 1);
+  const sel = el("select","days-pick"); sel.setAttribute("aria-label","Day 선택");
+  for (let i = 0; i < P.length; i++) {
+    sel.appendChild(new Option(`Day ${i+1}  ·  ${P[i].pat}${state.done[i] ? "  ✓" : ""}`, i));
+  }
+  sel.value = idx;
+  sel.onchange = () => goToDay(+sel.value);
+  bar.append(prev, sel, next);
+  nav.appendChild(bar);
+  if (typeof cur === "number") nav.appendChild(el("div","days-sub", P[cur].ko + (state.done[cur] ? "  ·  완료" : "")));
+  else if (cur === "journal") nav.appendChild(el("div","days-sub","오늘 노트 · 날짜를 고르면 그 Day로 돌아가요"));
 }
 
 const TABS = [["learn","패턴 이해·따라하기"],["write","영어로 써 보기"],["dialog","대화 읽기·듣기"],["quiz","퀴즈"],["make","문장 만들기"]];
@@ -1389,8 +1478,10 @@ function render(){
   if (typeof cur === "number" && state.last !== cur) { state.last = cur; save(); }
   renderStats(); renderDays();
   const card = $("#card"); card.innerHTML = "";
+  card.className = "card " + (cur === "journal" ? "is-journal" : (cur === "review" || tab === "warmup") ? "is-review" : "is-lesson");
   if (cur === "review") { renderReview(card); layoutInk(); return; }
   if (cur === "journal") { renderJournal(card); return; }
+  if (tab === "warmup") { renderWarmup(card); layoutInk(); return; }
   const p = P[cur];
   const hero = el("section","hero");
   const d = state.done[cur];
@@ -1468,7 +1559,7 @@ function askForm(anchor, label, onDone){
   const submit = async () => {
     const q = ta.value.trim(); if (!q) { ta.focus(); return; }
     const sample = await samplePromise;
-    if (!sample || sampleOff) { st.textContent = "오른쪽 위 설정에서 AI 키를 넣으면 쓸 수 있어요."; return; }
+    if (!sample || sampleOff) { st.textContent = "MY → Setting에서 AI 키를 넣으면 쓸 수 있어요."; return; }
     go.disabled = true; ta.disabled = true; st.textContent = "답을 생각하는 중…";
     try { await askClaude(sample, q, anchor); if (onDone) onDone(); }
     catch(e) {
@@ -1513,7 +1604,7 @@ let hideNotes = false; try { hideNotes = localStorage.getItem("pattern-english-h
 let zTop = 10;
 function layoutNotes(){
   const card = $("#card"); const old = card.querySelector(".pi-layer"); if (old) old.remove();
-  if (cur === "review" || cur === "journal" || hideNotes) return;
+  if (cur === "review" || cur === "journal" || tab === "warmup" || hideNotes) return;
   const list = (state.notes || {})[cur] || []; if (!list.length) return;
   const layer = el("div","pi-layer"); card.appendChild(layer);
   const cr = card.getBoundingClientRect(); const W = Math.min(220, cr.width - 24); const count = {};
@@ -1591,7 +1682,7 @@ function layoutInk(){
   if (inkCanvas.parentNode !== card) card.appendChild(inkCanvas);
   const W = card.clientWidth, H = card.clientHeight, dpr = window.devicePixelRatio || 1;
   if (inkCanvas.width !== Math.round(W*dpr) || inkCanvas.height !== Math.round(H*dpr)) { inkCanvas.width = Math.round(W*dpr); inkCanvas.height = Math.round(H*dpr); inkCanvas.style.width = W + "px"; inkCanvas.style.height = H + "px"; }
-  const usable = penOn && tab !== "quiz" && typeof cur === "number";
+  const usable = penOn && tab !== "quiz" && tab !== "warmup" && typeof cur === "number";
   inkCanvas.classList.toggle("on", usable);
   inkCanvas.classList.toggle("erase", usable && eraser);
   drawInk();
@@ -1680,7 +1771,7 @@ function renderPenBar(){
     askFab.onclick = () => toggleAsk(askPanel.hidden);
     penMainSlot = el("span"); row.append(askFab, penMainSlot);
   }
-  const hidden = tab === "quiz" || cur === "review" || cur === "journal";
+  const hidden = tab === "quiz" || tab === "warmup" || cur === "review" || cur === "journal";
   dock.hidden = hidden; if (hidden) { askPanel.hidden = true; return; }
   penBar.innerHTML = ""; penMainSlot.innerHTML = "";
   const main = el("button","pen-main"+(penOn?" on":""), penOn ? "✎ 펜 끄기" : "✎ 펜"); main.type = "button";
@@ -1963,7 +2054,7 @@ Is the learner's answer natural, grammatically correct English with the same mea
 function finishQuiz(panel){
   const total = quiz.qs.length, s = quiz.score, pass = s/total >= 0.6;
   if (!quiz.saved){
-    if (quiz.scope !== "review") {
+    if (quiz.scope !== "review" && quiz.scope !== "warmup") {
       const prev = state.done[quiz.scope];
       if (pass && (!prev || s > prev.best)) state.done[quiz.scope] = {best:s, total, at:todayKey()};
     }
@@ -1980,7 +2071,7 @@ function finishQuiz(panel){
   }
   const r = el("div","result");
   r.innerHTML = `<span class="eyebrow">결과</span><div class="score">${s}<small> / ${total}</small></div>
-   <p class="lead">${quiz.scope==="review" ? (pass ? "복습 잘하고 있어요. 틀린 문장만 다시 소리 내어 읽어 보세요." : "헷갈리는 패턴은 해당 Day로 돌아가 예문을 다시 들어 보세요.") : (pass ? `Day ${quiz.scope+1} 완료! 이제 '문장 만들기'에서 나만의 문장을 만들어 보세요.` : "60% 이상이면 완료로 기록돼요. 예문을 한 번 더 따라 하고 다시 도전해 보세요.")}</p>`;
+   <p class="lead">${quiz.scope==="warmup" || quiz.scope==="review" ? (pass ? "복습 잘하고 있어요. 이제 오늘 패턴으로 들어가도 좋아요." : "헷갈리는 문장은 오답노트에 모아 두었어요. 오늘 패턴을 먼저 보고 나중에 다시 봐도 돼요.") : (pass ? `Day ${quiz.scope+1} 완료! 이제 '문장 만들기'에서 나만의 문장을 만들어 보세요.` : "60% 이상이면 완료로 기록돼요. 예문을 한 번 더 따라 하고 다시 도전해 보세요.")}</p>`;
   const wrong = quiz.log.filter(l => !l.correct);
   if (wrong.length){
     const list = el("div","review-list"); list.appendChild(el("span","eyebrow","다시 볼 문장"));
@@ -1990,7 +2081,8 @@ function finishQuiz(panel){
   const c = el("div","controls");
   const again = el("button","btn","다시 풀기"); again.onclick = () => { quiz = null; render(); };
   c.appendChild(again);
-  if (quiz.scope !== "review"){ const mk = el("button","btn primary","문장 만들기 →"); mk.onclick = () => { tab="make"; quiz=null; render(); }; c.appendChild(mk); }
+  if (quiz.scope === "warmup"){ const go = el("button","btn primary","1단계 시작 →"); go.onclick = finishWarmup; c.appendChild(go); }
+  else if (quiz.scope !== "review"){ const mk = el("button","btn primary","문장 만들기 →"); mk.onclick = () => { tab="make"; quiz=null; render(); }; c.appendChild(mk); }
   r.appendChild(c); panel.appendChild(r);
 }
 
@@ -2037,7 +2129,7 @@ function renderJournal(card){
     controls.appendChild(toDrive);
   }
   panel.appendChild(controls);
-  panel.appendChild(el("p","note","PDF는 인쇄 창에서 프린터를 ‘PDF로 저장’으로 고르면 됩니다. 다른 컴퓨터와 맞추려면 설정에서 ‘이 컴퓨터 기록 보내기’를 누르세요."));
+  panel.appendChild(el("p","note","PDF는 인쇄 창에서 프린터를 ‘PDF로 저장’으로 고르면 됩니다. 다른 컴퓨터와 맞추려면 MY → Setting에서 ‘이 컴퓨터 기록 보내기’를 누르세요."));
 
   if (!days.length){
     panel.appendChild(el("p","lead","이 날짜에 모인 기록이 아직 없어요. 퀴즈를 풀거나, 문장을 만들거나, 질문을 남기면 여기에 쌓여요."));
@@ -2132,7 +2224,7 @@ function wrongItem(w){
 
 async function correctWrong(w, btn, out){
   const sample = await samplePromise;
-  if (!sample || sampleOff) { if (out) out.textContent = "설정에서 AI 키를 연결하면 첨삭을 받을 수 있어요."; return; }
+  if (!sample || sampleOff) { if (out) out.textContent = "MY → Setting에서 AI 키를 연결하면 첨삭을 받을 수 있어요."; return; }
   if (btn) { btn.disabled = true; }
   if (out) out.textContent = "첨삭 중…";
   const p = P[w.day] || {};
@@ -2214,6 +2306,29 @@ ${journalPrintHTML(date)}`;
   await w.close();
 }
 
+/* ---------------- WARMUP REVIEW (before step 1) ---------------- */
+function renderWarmup(card){
+  const p = P[cur];
+  const doneIdx = doneDays(cur);
+  const hero = el("section","hero");
+  hero.innerHTML = `<div class="meta"><span class="eyebrow">Day ${cur+1} 들어가기 전</span><span class="tag">${p.tag}</span></div>
+    <h2 class="pattern">복습 퀴즈</h2>
+    <p class="pattern-ko">오늘 배울 ${p.pat} 전에, 이미 한 패턴을 짧게 복습해요.</p>`;
+  card.appendChild(hero);
+  const panel = el("section","panel"); card.appendChild(panel);
+  if (!doneIdx.length){ finishWarmup(); return; }
+  if (!quiz){
+    panel.appendChild(el("p","lead",`완료한 ${doneIdx.length}개 패턴에서 6문제를 내요. 건너뛰고 바로 1단계로 가도 돼요.`));
+    const c = el("div","controls");
+    const s = el("button","btn primary","복습 시작");
+    s.onclick = () => { quiz = {qs: makeQuestions(doneIdx, 6), i:0, score:0, log:[], scope:"warmup"}; render(); };
+    const skip = el("button","btn mark","건너뛰고 1단계 →"); skip.type = "button";
+    skip.onclick = finishWarmup;
+    c.append(s, skip); panel.appendChild(c); return;
+  }
+  runQuiz(panel);
+}
+
 /* ---------------- REVIEW ---------------- */
 function renderReview(card){
   const hero = el("section","hero");
@@ -2223,7 +2338,7 @@ function renderReview(card){
   const doneIdx = Object.keys(state.done).map(Number).filter(i => i < P.length);
   if (doneIdx.length < 2){
     panel.appendChild(el("p","lead","복습은 Day 2개 이상을 완료하면 열려요. 각 Day의 퀴즈에서 60% 이상 맞히면 완료돼요."));
-    const c = el("div","controls"); const go = el("button","btn primary",`Day ${firstOpen()+1}로 가기`); go.onclick = () => { cur = firstOpen(); tab="learn"; render(); }; c.appendChild(go); panel.appendChild(c);
+    const c = el("div","controls"); const go = el("button","btn primary",`Day ${firstOpen()+1}로 가기`); go.onclick = () => goToDay(firstOpen()); c.appendChild(go); panel.appendChild(c);
     return;
   }
   if (!quiz){
