@@ -312,11 +312,11 @@ footer.refs a:hover{text-decoration:underline}
     <summary>발음이 기계 같다면? 더 자연스러운 목소리 설치하기</summary>
     <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
       <p class="note">발음은 이 기기(컴퓨터·휴대폰)에 설치된 음성을 써요. 목소리 목록에서 <b>Premium · Enhanced · Natural · Online</b>이 붙은 음성이 가장 자연스러워요.</p>
-      <p class="note" data-os="mac"><b>Mac:</b> 시스템 설정 → 손쉬운 사용 → 읽기 및 말하기 → 시스템 음성 옆 ⓘ (음성 관리) → 영어(미국)에서 <b>Ava (Premium)</b>, <b>Zoe (Premium)</b> 또는 <b>Evan (Enhanced)</b> 다운로드 → 이 페이지 새로고침.</p>
+      <p class="note" data-os="mac"><b>Mac:</b> 시스템 설정 → 손쉬운 사용 → 읽기 및 말하기 → 시스템 음성 옆 ⓘ (음성 관리) → 영어(미국)에서 <b>Ava (Premium)</b>, <b>Zoe (Premium)</b> 또는 <b>Evan (Enhanced)</b>, 한국어에서 <b>유나 (Premium)</b>을 받은 뒤 이 페이지를 다시 열어 주세요.</p>
       <p class="note" data-os="mac windows"><b>설치했는데 목록에 없다면:</b> 브라우저는 켜질 때 한 번만 목소리 목록을 읽어서, 페이지 새로고침으로는 새 목소리가 안 보여요. 브라우저를 <b>⌘Q로 완전히 종료</b>한 뒤 다시 열어 주세요. Chrome은 Premium 음성을 못 불러오는 경우가 있어서, 그래도 없으면 <b>Safari</b>에서 열어 보세요.</p>
       <p class="note" data-os="windows"><b>Windows:</b> Microsoft Edge로 열면 <b>Microsoft Ava/Andrew Online (Natural)</b> 음성을 바로 쓸 수 있어요.</p>
       <p class="note" data-os="mac windows"><b>목소리를 바꿔도 같은 소리가 난다면:</b> 지금 열어 둔 프로그램이 목소리 선택을 무시하고 시스템 기본 음성만 쓰는 것이에요 (Claude 데스크톱 앱이나 Cursor 같은 앱 안에서 자주 생겨요). 이 페이지를 <b>Chrome이나 Safari</b>에서 열어 주세요.</p>
-      <p class="note" data-os="ios"><b>iPhone · iPad:</b> 설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → 영어 → Ava/Zoe (향상된 음질) 다운로드 → 이 페이지를 다시 열고 목록에서 고르기. 아이폰은 Chrome에서 열어도 Safari와 같은 음성을 써요.</p>
+      <p class="note" data-os="ios"><b>iPhone · iPad:</b> 설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → 영어에서 Ava/Zoe (향상된 음질), 한국어에서 유나/소라 (향상된 음질)를 받은 뒤 이 페이지를 다시 열어 주세요. 라디오 진행은 한국어 목소리, 예문은 영어 목소리를 씁니다.</p>
       <p class="note" data-os="android"><b>안드로이드:</b> 설정 → 접근성(또는 일반) → 텍스트 음성 변환 출력 → 기본 엔진을 Google 음성 서비스로 → 언어를 영어(미국)로 → 음성 데이터 설치에서 원하는 목소리 고르기. 안드로이드 Chrome은 목록에서 골라도 휴대폰에 설정한 목소리로 읽는 경우가 많아요.</p>
       <p class="note" data-os="ios android"><b>소리가 아예 안 나면:</b> 휴대폰 무음 모드(옆면 스위치)와 미디어 볼륨을 확인해 주세요. 화면이 꺼지면 읽기가 멈춰요.</p>
       <button class="chipbtn" id="tip-all" type="button" hidden>다른 기기 안내도 보기</button>
@@ -782,7 +782,7 @@ function mergeInk(incoming){
   try { localStorage.setItem(INK_KEY, JSON.stringify(ink)); } catch(e) {}
 }
 function backupPayload(){
-  let voice = null, hide = null; try { voice = localStorage.getItem("pattern-english-voice3"); hide = localStorage.getItem("pattern-english-hide-notes"); } catch(e) {}
+  let voice = null, hide = null; try { voice = voicePref(); hide = localStorage.getItem("pattern-english-hide-notes"); } catch(e) {}
   return {app:"pattern-english", v:2, savedAt:new Date().toISOString(), state, ink, prefs:{voice, hide}};
 }
 function fbDocRef(){
@@ -809,7 +809,7 @@ function applyRemoteDoc(d){
   applyingRemote = true;
   mergeIncoming(d.state);
   mergeInk(d.ink);
-  if (d.prefs && d.prefs.voice) try { localStorage.setItem("pattern-english-voice3", d.prefs.voice); } catch(e) {}
+  if (d.prefs && d.prefs.voice) saveVoiceName(d.prefs.voice);
   if (d.prefs && d.prefs.hide != null) try { localStorage.setItem("pattern-english-hide-notes", d.prefs.hide); } catch(e) {}
   try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
   if (!navigated) resetToStartDay();
@@ -991,8 +991,10 @@ function voiceScore(v){
   if (/Online/i.test(v.name)) s += 70;
   if (/Enhanced/i.test(v.name)) s += 60;
   if (/Google US English/i.test(v.name)) s += 55;
-  if (/Ava|Zoe|Evan|Nathan|Allison|Susan|Tom|Aria|Jenny|Andrew|Emma|Brian/i.test(v.name)) s += 20;
-  if (/Samantha|Alex/i.test(v.name)) s += 10;
+  if (/Ava|Zoe/i.test(v.name)) s += 36;
+  if (/Evan|Nathan|Allison|Susan|Tom|Aria|Jenny|Andrew|Emma|Brian/i.test(v.name)) s += 20;
+  if (/Samantha|Alex/i.test(v.name)) s += 12;
+  if (/Compact|Default/i.test(v.name)) s -= 25;
   if (/^en[-_]US/i.test(v.lang)) s += 15; else if (/^en[-_](GB|AU|CA)/i.test(v.lang)) s += 5;
   if (v.localService === false && !/Google/i.test(v.name)) s += 5;
   return s;
@@ -1002,14 +1004,31 @@ function englishVoices(){
   return synth.getVoices().filter(v => (/^en/i.test(v.lang) || /Daniela/i.test(v.name)) && !NOVELTY.test(v.name)).sort((a,b) => voiceScore(b) - voiceScore(a));
 }
 function defaultVoice(vs){
-  // 기본 목소리: Karen (Premium/Enhanced 우선) → 가장 자연스러운 음성
-  return vs.find(v => /^Karen/i.test(v.name)) || vs.find(v => /Karen/i.test(v.name)) || vs[0] || null;
+  return vs.find(v => /Premium|Natural|Neural/i.test(v.name))
+    || vs.find(v => /Enhanced|Online/i.test(v.name))
+    || vs.find(v => /Ava|Zoe|Evan|Nathan|Samantha|Allison|Aria|Jenny|Google US English/i.test(v.name))
+    || vs[0] || null;
+}
+function voicePref(){
+  try { return localStorage.getItem("pattern-english-voice4") || localStorage.getItem("pattern-english-voice3"); } catch(e) { return null; }
+}
+function saveVoiceName(name){
+  try {
+    if (name) {
+      localStorage.setItem("pattern-english-voice4", name);
+      localStorage.setItem("pattern-english-voice3", name);
+    }
+  } catch(e) {}
 }
 let chosenName = null;   // 이번 방문에서 고른 목소리 (항상 우선)
 function pickVoice(){
   const vs = englishVoices(); const sel = $("#voice");
-  let saved = null; try { saved = localStorage.getItem("pattern-english-voice3"); } catch(e) {}
-  voice = vs.find(v => v.name === chosenName) || vs.find(v => v.name === saved) || defaultVoice(vs);
+  const saved = voicePref();
+  const named = vs.find(v => v.name === chosenName) || vs.find(v => v.name === saved);
+  const best = vs[0];
+  if (chosenName && named) voice = named;
+  else if (named && best && voiceScore(best) >= voiceScore(named) + 35) { voice = best; saveVoiceName(best.name); }
+  else voice = named || defaultVoice(vs);
   sel.innerHTML = "";
   const hq = vs.filter(v => /Premium|Enhanced|Natural|Neural|Online/i.test(v.name)).length;
   $("#voice-count").textContent = vs.length ? `영어 목소리 ${vs.length}개${hq ? ` (고음질 ${hq}개)` : " · 고음질 없음"}` : "";
@@ -1017,7 +1036,7 @@ function pickVoice(){
   sel.disabled = false;
   vs.forEach(v => { const o = new Option(v.name.replace(/^Microsoft /,"") + " · " + v.lang, v.name); sel.appendChild(o); });
   if (voice) sel.value = voice.name;
-  $("#voice-tip").open = !/Karen/i.test(voice ? voice.name : "") && voiceScore(vs[0]) < 55 && !saved;
+  $("#voice-tip").open = voiceScore(voice || {}) < 55 && !chosenName;
 }
 if (synth) { pickVoice(); synth.onvoiceschanged = pickVoice; setTimeout(pickVoice, 800); }
 // 기기 구분: 목소리 안내를 이 기기에 맞는 것만 보여 줘요
@@ -1040,7 +1059,7 @@ if (synth) {
   window.addEventListener("pointerdown", unlock, true); window.addEventListener("keydown", unlock, true);
 }
 const testLine = () => "Hi, I'm " + ((voice && voice.name.replace(/^(Microsoft|Google) /,"").split(/[ (]/)[0]) || "your teacher") + ". I'd like an iced Americano, please.";
-$("#voice").onchange = e => { chosenName = e.target.value; voice = englishVoices().find(v => v.name === chosenName) || voice; try { localStorage.setItem("pattern-english-voice3", chosenName); } catch(err) {} stopSpeech(); speak(testLine()); };
+$("#voice").onchange = e => { chosenName = e.target.value; voice = englishVoices().find(v => v.name === chosenName) || voice; saveVoiceName(chosenName); stopSpeech(); speak(testLine()); };
 $("#voice-test").onclick = () => { stopSpeech(); speak(testLine()); };
 function stopSpeech(){
   seqToken++;
@@ -1048,43 +1067,99 @@ function stopSpeech(){
   if (playingBtn) { playingBtn.classList.remove("on"); playingBtn.innerHTML = ICON_PLAY; playingBtn = null; }
   if (radioOn) { radioOn = false; releaseWake(); renderRadio(); }
 }
+function koVoiceScore(v){
+  let s = 0;
+  if (/Natural|Neural|Premium|Enhanced|Online/i.test(v.name)) s += 80;
+  if (/Yuna|Sora|SunHi|Heami|유나|소라|선희/i.test(v.name)) s += 40;
+  if (/Google/i.test(v.name)) s += 28;
+  if (/Compact|Default/i.test(v.name)) s -= 20;
+  if (/^ko[-_]KR/i.test(v.lang)) s += 10;
+  return s;
+}
 function pickKoVoice(){
   if (!synth) return null;
-  const vs = synth.getVoices().filter(v => /^ko/i.test(v.lang));
-  return vs.find(v => /Yuna|Sora|SunHi|Heami|Google.*Korean|Neural|Premium|Enhanced|Natural/i.test(v.name)) || vs[0] || null;
+  const vs = synth.getVoices().filter(v => /^ko/i.test(v.lang) || /유나|소라|선희|Yuna|Sora|SunHi|Heami/i.test(v.name));
+  return vs.slice().sort((a,b) => koVoiceScore(b) - koVoiceScore(a))[0] || null;
 }
-function speakAs(text, lang){
+function refreshEnVoice(){
+  if (!synth) return null;
+  if (voice) { const fresh = synth.getVoices().find(v => v.name === voice.name); if (fresh) voice = fresh; }
+  return voice;
+}
+function softRate(lang, v){
+  const name = (v && v.name) || "";
+  let r = rate;
+  r *= lang === "ko" ? 0.9 : 0.86;
+  if (/Google/i.test(name)) r *= 0.94;
+  if (!/Premium|Enhanced|Natural|Neural|Online|Ava|Zoe|Yuna|Sora|Heami|SunHi|유나|소라/i.test(name)) r *= 0.93;
+  if (radioOn) r *= 0.96;
+  return Math.max(0.68, Math.min(1.02, r));
+}
+function softPitch(lang, v){
+  const name = (v && v.name) || "";
+  if (lang === "ko") return 1;
+  if (/Google/i.test(name)) return 0.97;
+  if (/Ava|Zoe|Samantha/i.test(name)) return 0.98;
+  return 0.95;
+}
+function splitSpeak(text){
+  const raw = String(text || "").replace(/\s+/g, " ").trim();
+  if (!raw) return [];
+  const parts = [];
+  let buf = "";
+  for (const ch of raw) {
+    buf += ch;
+    if (/[.!?…。！？]/.test(ch)) { parts.push(buf.trim()); buf = ""; }
+  }
+  if (buf.trim()) parts.push(buf.trim());
+  const out = [];
+  for (const p of parts) {
+    if (p.length <= 86) { out.push(p); continue; }
+    let piece = "";
+    for (const ch of p) {
+      piece += ch;
+      if (/[,，、;；]/.test(ch) && piece.trim().length > 24) { out.push(piece.trim()); piece = ""; }
+    }
+    if (piece.trim()) out.push(piece.trim());
+  }
+  return out.length ? out : [raw];
+}
+function speakOne(text, lang, my){
   return new Promise(res => {
     const t = String(text || "").replace(/\s+/g, " ").trim();
-    if (!synth || !t) { res(); return; }
+    if (!synth || !t || my !== seqToken) { res(); return; }
     try { if (synth.paused) synth.resume(); } catch(e) {}
+    const v = lang === "ko" ? pickKoVoice() : refreshEnVoice();
     const u = new SpeechSynthesisUtterance(t);
-    if (lang === "ko") {
-      const kv = pickKoVoice();
-      u.lang = kv ? kv.lang : "ko-KR";
-      if (kv) u.voice = kv;
-      u.rate = Math.min(1.08, rate + 0.08);
-    } else {
-      if (voice) { const fresh = synth.getVoices().find(v => v.name === voice.name); if (fresh) voice = fresh; }
-      u.lang = voice ? voice.lang : "en-US";
-      if (voice) u.voice = voice;
-      u.rate = rate * (voice && /Google/i.test(voice.name) ? 0.95 : 1);
-    }
+    u.lang = v ? v.lang : (lang === "ko" ? "ko-KR" : "en-US");
+    if (v) u.voice = v;
+    u.rate = softRate(lang, v);
+    u.pitch = softPitch(lang, v);
+    u.volume = 1;
     u.onend = u.onerror = () => res();
     synth.speak(u);
   });
 }
-function speak(text, btn){
-  return new Promise(res => {
-    if (!synth) { res(); return; }
-    try { if (synth.paused) synth.resume(); } catch(e) {}
-    if (voice) { const fresh = synth.getVoices().find(v => v.name === voice.name); if (fresh) voice = fresh; }  // 오래된 voice 객체는 무시되는 브라우저가 있어요
-    const u = new SpeechSynthesisUtterance(plain(text)); u.lang = voice ? voice.lang : "en-US"; u.rate = rate * (voice && /Google/i.test(voice.name) ? 0.95 : 1); u.pitch = 1; if (voice) u.voice = voice;
-    if (btn) { if (playingBtn && playingBtn !== btn) { playingBtn.classList.remove("on"); playingBtn.innerHTML = ICON_PLAY; } playingBtn = btn; btn.classList.add("on"); btn.innerHTML = ICON_STOP; }
-    const t0 = performance.now();
-    u.onend = u.onerror = () => { if (btn && playingBtn === btn) { btn.classList.remove("on"); btn.innerHTML = ICON_PLAY; playingBtn = null; } res(performance.now()-t0); };
-    synth.speak(u);
-  });
+async function speakFlow(text, lang, my){
+  const chunks = splitSpeak(text);
+  for (let i = 0; i < chunks.length; i++) {
+    if (my !== seqToken) return;
+    await speakOne(chunks[i], lang, my);
+    if (i < chunks.length - 1 && my === seqToken) {
+      await new Promise(r => setTimeout(r, lang === "ko" ? 260 : 180));
+    }
+  }
+}
+async function speakAs(text, lang){
+  await speakFlow(text, lang, seqToken);
+}
+async function speak(text, btn){
+  const my = seqToken;
+  if (btn) { if (playingBtn && playingBtn !== btn) { playingBtn.classList.remove("on"); playingBtn.innerHTML = ICON_PLAY; } playingBtn = btn; btn.classList.add("on"); btn.innerHTML = ICON_STOP; }
+  const t0 = performance.now();
+  await speakFlow(plain(text), "en", my);
+  if (btn && playingBtn === btn) { btn.classList.remove("on"); btn.innerHTML = ICON_PLAY; playingBtn = null; }
+  return performance.now() - t0;
 }
 function playBtn(text, label){
   const b = el("button","play", ICON_PLAY); b.type = "button"; b.setAttribute("aria-label", label || "듣기");
@@ -1523,7 +1598,7 @@ function applyBackup(d){
   ink = (d.ink && typeof d.ink === "object") ? d.ink : {};
   try {
     localStorage.setItem(INK_KEY, JSON.stringify(ink));
-    if (d.prefs && d.prefs.voice) localStorage.setItem("pattern-english-voice3", d.prefs.voice);
+    if (d.prefs && d.prefs.voice) saveVoiceName(d.prefs.voice);
     if (d.prefs && d.prefs.hide != null) localStorage.setItem("pattern-english-hide-notes", d.prefs.hide);
   } catch(e) {}
   save(); Object.keys(ink).forEach(k => saveInk(+k));
