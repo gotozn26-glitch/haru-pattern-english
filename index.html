@@ -44,10 +44,13 @@ mark{background:var(--mark-fill);color:var(--mark-text);padding:0 2px;border-rad
 /* header */
 header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand h1{font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1.1;margin:2px 0 0;letter-spacing:-.01em}
-.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stats{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
 .stat{background:var(--paper);border:0;border-radius:999px;padding:6px 14px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;box-shadow:var(--lift)}
 .stat b{color:var(--ink)}
 .account-btn{font-weight:700;color:var(--ink);padding:8px 16px}
+.radio-play{flex:0 0 auto;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:var(--paper);box-shadow:var(--lift);font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.radio-play.on{background:var(--ink)}
+.radio-now{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .chipbtn{border:0;background:var(--soft);border-radius:999px;padding:6px 12px;font-size:13px}
 .chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -978,7 +981,7 @@ async function initRemote(){
 }
 
 /* ---------------- SPEECH ---------------- */
-let rate = 1, voice = null, playingBtn = null, seqToken = 0;
+let rate = 1, voice = null, playingBtn = null, seqToken = 0, radioOn = false, radioLock = null;
 const synth = window.speechSynthesis;
 const NOVELTY = /Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Fred|Junior|Ralph|Kathy|Grandma|Grandpa|Rocko|Shelley|Flo|Eddy|Reed|Sandy/i;
 function voiceScore(v){
@@ -1039,7 +1042,38 @@ if (synth) {
 const testLine = () => "Hi, I'm " + ((voice && voice.name.replace(/^(Microsoft|Google) /,"").split(/[ (]/)[0]) || "your teacher") + ". I'd like an iced Americano, please.";
 $("#voice").onchange = e => { chosenName = e.target.value; voice = englishVoices().find(v => v.name === chosenName) || voice; try { localStorage.setItem("pattern-english-voice3", chosenName); } catch(err) {} stopSpeech(); speak(testLine()); };
 $("#voice-test").onclick = () => { stopSpeech(); speak(testLine()); };
-function stopSpeech(){ seqToken++; if (synth) synth.cancel(); if (playingBtn) { playingBtn.classList.remove("on"); playingBtn.innerHTML = ICON_PLAY; playingBtn = null; } }
+function stopSpeech(){
+  seqToken++;
+  if (synth) synth.cancel();
+  if (playingBtn) { playingBtn.classList.remove("on"); playingBtn.innerHTML = ICON_PLAY; playingBtn = null; }
+  if (radioOn) { radioOn = false; releaseWake(); renderRadio(); }
+}
+function pickKoVoice(){
+  if (!synth) return null;
+  const vs = synth.getVoices().filter(v => /^ko/i.test(v.lang));
+  return vs.find(v => /Yuna|Sora|SunHi|Heami|Google.*Korean|Neural|Premium|Enhanced|Natural/i.test(v.name)) || vs[0] || null;
+}
+function speakAs(text, lang){
+  return new Promise(res => {
+    const t = String(text || "").replace(/\s+/g, " ").trim();
+    if (!synth || !t) { res(); return; }
+    try { if (synth.paused) synth.resume(); } catch(e) {}
+    const u = new SpeechSynthesisUtterance(t);
+    if (lang === "ko") {
+      const kv = pickKoVoice();
+      u.lang = kv ? kv.lang : "ko-KR";
+      if (kv) u.voice = kv;
+      u.rate = Math.min(1.08, rate + 0.08);
+    } else {
+      if (voice) { const fresh = synth.getVoices().find(v => v.name === voice.name); if (fresh) voice = fresh; }
+      u.lang = voice ? voice.lang : "en-US";
+      if (voice) u.voice = voice;
+      u.rate = rate * (voice && /Google/i.test(voice.name) ? 0.95 : 1);
+    }
+    u.onend = u.onerror = () => res();
+    synth.speak(u);
+  });
+}
 function speak(text, btn){
   return new Promise(res => {
     if (!synth) { res(); return; }
@@ -1067,6 +1101,108 @@ async function playSequence(items, gapFactor, onStart){
     if (my !== seqToken) return;
     await new Promise(r => setTimeout(r, gapFactor ? Math.max(1200, (dur||1500)*gapFactor) : 500));
   }
+}
+
+function spokenPat(pat){ return String(pat || "").replace(/\s*~\s*/g, " ").replace(/\s*\/\s*/g, ", ").replace(/\s+/g, " ").trim(); }
+function radioAlive(my){ return radioOn && my === seqToken; }
+function radioNow(t){ const n = $("#radio-now"); if (n) n.textContent = t; }
+async function holdWake(){
+  releaseWake();
+  try { if (navigator.wakeLock) radioLock = await navigator.wakeLock.request("screen"); } catch(e) {}
+}
+function releaseWake(){ try { if (radioLock) radioLock.release(); } catch(e) {} radioLock = null; }
+async function sayKo(text, my){ if (!radioAlive(my)) return; radioNow(text); await speakAs(text, "ko"); }
+async function sayEn(text, my){ if (!radioAlive(my)) return; radioNow(text); await speakAs(text, "en"); }
+async function radioPause(ms, my){ if (!radioAlive(my)) return; await new Promise(r => setTimeout(r, ms)); }
+function radioHint(){
+  return radioOn ? "라디오 정지" : "라디오. 운전할 때 눌러 주세요. 오늘 패턴, 대화, 퀴즈를 이어서 들려줘요.";
+}
+function paintRadio(play){
+  if (!play) return;
+  play.className = "radio-play" + (radioOn ? " on" : "");
+  play.setAttribute("aria-pressed", radioOn);
+  play.setAttribute("aria-label", radioHint());
+  play.title = radioHint();
+}
+function renderRadio(){
+  paintRadio($("#radio-play"));
+  const now = $("#radio-now");
+  if (now && !radioOn) now.textContent = "";
+}
+async function startRadio(){
+  stopSpeech();
+  radioOn = true;
+  if (typeof cur !== "number") { cur = startDay(); tab = "learn"; }
+  warmed.add(cur);
+  if (tab === "warmup" || cur === "journal" || cur === "review") { tab = "learn"; quiz = null; }
+  render();
+  const my = seqToken;
+  holdWake();
+  try {
+    for (let i = cur; i < P.length && radioAlive(my); i++) await playRadioDay(i, my);
+  } finally {
+    if (my === seqToken) { radioOn = false; releaseWake(); renderRadio(); }
+  }
+}
+async function playRadioDay(i, my){
+  if (!radioAlive(my)) return;
+  const p = P[i];
+  if (cur !== i || tab !== "learn") { cur = i; tab = "learn"; quiz = null; warmed.add(i); render(); }
+  radioNow("Day " + (i+1) + " · " + p.pat);
+  await sayKo("Day " + (i+1) + ". 오늘의 패턴은 " + spokenPat(p.pat) + ". " + p.ko, my);
+  if (!radioAlive(my)) return;
+  await sayKo(p.note, my);
+  await sayKo("예문을 듣고, 잠시 후에 따라 말해 보세요.", my);
+  for (let k = 0; k < p.ex.length && radioAlive(my); k++) {
+    const [en, ko, sit] = p.ex[k];
+    radioNow("Day " + (i+1) + " · 예문 " + (k+1));
+    if (sit) await sayKo(sit, my);
+    await sayEn(plain(en), my);
+    await radioPause(1400, my);
+    await sayKo(ko, my);
+    await radioPause(350, my);
+  }
+  if (!radioAlive(my)) return;
+  await sayKo("짧은 대화입니다. 듣기만 해도 좋아요.", my);
+  for (let k = 0; k < p.dlg.length && radioAlive(my); k++) {
+    const [who, en] = p.dlg[k];
+    radioNow("Day " + (i+1) + " · 대화 " + (who === "B" ? "나" : "A"));
+    await sayEn(en, my);
+    await radioPause(280, my);
+  }
+  if (!radioAlive(my)) return;
+  await sayKo("이제 퀴즈입니다. 답을 속으로 말한 다음, 정답을 들으세요.", my);
+  const qs = makeQuestions([i], 6);
+  for (let n = 0; n < qs.length && radioAlive(my); n++) {
+    const q = qs[n];
+    radioNow("Day " + (i+1) + " · 퀴즈 " + (n+1) + " / " + qs.length);
+    await sayKo((n+1) + "번.", my);
+    if (q.type === "listen") {
+      await sayKo("문장을 듣고 뜻을 생각해 보세요.", my);
+      await sayEn(plain(q.en), my);
+      await radioPause(2200, my);
+      await sayKo("정답. " + q.ko, my);
+    } else if (q.type === "fill") {
+      await sayKo(q.ko + ". 빈칸에 뭐가 들어갈까요?", my);
+      await sayEn(plain(q.blank).replace("_____", "blank"), my);
+      await radioPause(2000, my);
+      await sayKo("정답은 " + q.answer + " 입니다.", my);
+      await sayEn(plain(q.en), my);
+    } else if (q.type === "order") {
+      await sayKo("단어를 맞춰 문장을 만들어 보세요. " + q.ko, my);
+      await sayEn(q.tokens.map(t => t.w).join(". "), my);
+      await radioPause(2500, my);
+      await sayEn(plain(q.en), my);
+    } else {
+      await sayKo("이 말을 영어로 해보세요. " + q.ko, my);
+      await radioPause(2600, my);
+      await sayEn(plain(q.en), my);
+    }
+    await radioPause(450, my);
+  }
+  if (!radioAlive(my)) return;
+  await sayKo("Day " + (i+1) + " 여기까지입니다.", my);
+  markStudied(); save();
 }
 $("#rate-slow").onclick = () => { rate = .75; $("#rate-slow").setAttribute("aria-pressed","true"); $("#rate-norm").setAttribute("aria-pressed","false"); };
 $("#rate-norm").onclick = () => { rate = 1; $("#rate-norm").setAttribute("aria-pressed","true"); $("#rate-slow").setAttribute("aria-pressed","false"); };
@@ -1434,11 +1570,19 @@ function finishWarmup(){
 function renderStats(){
   const st = $("#stats"); if (!st) return;
   st.innerHTML = "";
+  const play = el("button", null, "📻");
+  play.id = "radio-play";
+  play.type = "button";
+  paintRadio(play);
+  play.onclick = () => radioOn ? stopSpeech() : startRadio();
+  const now = el("span","radio-now");
+  now.id = "radio-now";
+  now.setAttribute("aria-live", "polite");
   const logged = !!fbUser;
   const b = el("button","stat account-btn", logged ? "MY" : "로그인"); b.type = "button";
   b.setAttribute("aria-label", logged ? "내 공부와 설정" : "구글 계정으로 로그인");
   b.onclick = () => logged ? openMy() : startHeaderLogin();
-  st.appendChild(b);
+  st.append(play, now, b);
 }
 async function startHeaderLogin(){
   if (!fbAuth || !fbHttps()) { accountPane = "setting"; return openAccount(); }
@@ -1476,7 +1620,7 @@ function renderDays(){
 const TABS = [["learn","패턴 이해·따라하기"],["write","영어로 써 보기"],["dialog","대화 읽기·듣기"],["quiz","퀴즈"],["make","문장 만들기"]];
 function render(){
   if (typeof cur === "number" && state.last !== cur) { state.last = cur; save(); }
-  renderStats(); renderDays();
+  renderStats(); renderDays(); renderRadio();
   const card = $("#card"); card.innerHTML = "";
   card.className = "card " + (cur === "journal" ? "is-journal" : (cur === "review" || tab === "warmup") ? "is-review" : "is-lesson");
   if (cur === "review") { renderReview(card); layoutInk(); return; }
